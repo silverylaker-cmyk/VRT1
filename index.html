@@ -3,17 +3,11 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>전정재활 · 시각 자극 훈련</title>
+<title>전정재활 · 시각/전정 자극 훈련</title>
 <style>
   :root{
-    --bg:#0e1418;
-    --panel:#161e24;
-    --line:#27333b;
-    --ink:#e8eef1;
-    --muted:#8ea3ad;
-    --amber:#e8a23c;     /* 강도(자극) */
-    --teal:#3ec6b4;      /* 정지·안전 */
-    --warn:#e86b6b;
+    --bg:#0e1418; --panel:#161e24; --line:#27333b; --ink:#e8eef1; --muted:#8ea3ad;
+    --amber:#e8a23c; --teal:#3ec6b4; --warn:#e86b6b;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;overflow:hidden;background:#05080a;font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif}
@@ -31,8 +25,8 @@
 
   .safety{display:flex;gap:12px;background:rgba(232,107,107,.08);border:1px solid rgba(232,107,107,.3);
     border-radius:14px;padding:14px 16px;margin-bottom:24px}
-  .safety b{color:#f1a0a0}
   .safety .s-ico{color:var(--warn);font-size:20px;line-height:1.2}
+  .safety b{color:#f1a0a0}
   .safety p{font-size:12.5px;color:#d7c2c2;line-height:1.6}
 
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px}
@@ -48,8 +42,8 @@
   input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:6px;background:#26323a;outline:none}
   input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;
     background:var(--amber);cursor:pointer;border:3px solid #0e1418;box-shadow:0 2px 8px rgba(0,0,0,.4)}
-  .seg{display:flex;gap:8px}
-  .seg button{flex:1;font:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;
+  .seg{display:flex;gap:8px;flex-wrap:wrap}
+  .seg button{flex:1;min-width:64px;font:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;
     background:#1d272e;border:1px solid var(--line);border-radius:10px;padding:11px 8px;transition:.15s}
   .seg button.on{background:rgba(62,198,180,.14);border-color:var(--teal);color:var(--teal)}
   .toggle{display:flex;align-items:center;justify-content:space-between}
@@ -57,6 +51,14 @@
   .toggle .sw.on{background:var(--teal)}
   .toggle .sw::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:.2s}
   .toggle .sw.on::after{transform:translateX(19px)}
+
+  /* 세션 선택 그리드 */
+  .scenegrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .scenegrid .grouplabel{grid-column:1/-1;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted);font-weight:700;margin:8px 0 2px}
+  .scenegrid button{font:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;text-align:left;
+    background:#1d272e;border:1px solid var(--line);border-radius:10px;padding:11px 12px;transition:.15s}
+  .scenegrid button.on{background:rgba(62,198,180,.14);border-color:var(--teal);color:var(--teal)}
 
   .start{display:flex;gap:10px;margin-top:22px}
   button.cta{flex:1;font:inherit;font-size:15px;font-weight:700;color:#06120f;cursor:pointer;border:none;border-radius:12px;
@@ -96,63 +98,25 @@
 <div id="pvhint">드래그=둘러보기 · 클릭=정지/재개</div>
 
 <div id="overlay"><div class="wrap">
-  <div class="eyebrow">전정재활 · 시각 자극 노출</div>
-  <h1>시각성 어지럼 습관화 훈련</h1>
-  <p class="lede">복잡한 시각 환경과 광학 흐름에 통제된 강도로 노출해 시각 의존을 줄이는 도구입니다. 강도는 낮게 시작해 단계적으로 올리세요.</p>
+  <div class="eyebrow">전정재활 · 시각/전정 자극 훈련</div>
+  <h1>전정재활 세션</h1>
+  <p class="lede">습관화·시선안정화·안구운동·환경노출 등 여러 전정재활 세션을 한 곳에서 실행합니다. 강도는 낮게 시작해 단계적으로 올리세요.</p>
 
   <div class="safety">
     <div class="s-ico">⚠︎</div>
-    <p><b>안전</b> · 이 훈련은 의도적으로 어지럼을 유발합니다. <b>앉은 자세</b>를 기본으로 하고, 보조자가 곁에 있을 것을 권장합니다. 어지러우면 <b>핀치(선택)</b>로 즉시 정지하세요. 급성 전정신경염·낙상 고위험군은 주의가 필요합니다. 진단·치료를 대체하지 않습니다.</p>
+    <p><b>안전</b> · 일부 세션은 의도적으로 어지럼을 유발합니다. <b>앉은 자세</b>를 기본으로 하고, 보조자가 곁에 있을 것을 권장합니다. 어지러우면 <b>핀치(선택)</b>로 즉시 정지하세요. 급성 전정신경염·낙상 고위험군은 주의가 필요합니다. 진단·치료를 대체하지 않습니다.</p>
   </div>
 
   <div class="panel">
-    <h2>장면</h2>
-    <div class="seg" id="sceneSeg">
-      <button data-v="aisle" class="on">마트 통로</button>
-      <button data-v="okn">옵토키네틱 필드</button>
-    </div>
-    <p class="hint" id="sceneHint">선반이 빽빽한 통로를 따라 앞으로 흐르는 광학 흐름에 노출됩니다.</p>
+    <h2>세션 선택</h2>
+    <div class="scenegrid" id="scenePick"></div>
+    <p class="hint" id="sceneHint"></p>
   </div>
 
   <div class="panel">
-    <h2>강도 설정</h2>
-    <div class="field">
-      <div class="row"><label>자극 속도</label><span class="val" id="spdVal">40%</span></div>
-      <input type="range" id="spd" min="0" max="100" value="40" />
-      <p class="hint">통로 전진 속도 / 필드 회전 속도. 0%에서 시작해 환자 반응을 보며 올리세요.</p>
-    </div>
-    <div class="field">
-      <div class="row"><label>시각 밀도</label><span class="val teal" id="denVal">보통</span></div>
-      <div class="seg" id="denSeg">
-        <button data-v="low">낮음</button><button data-v="med" class="on">보통</button><button data-v="high">높음</button>
-      </div>
-      <p class="hint">화면을 채우는 시각 복잡도. 높을수록 자극이 강합니다.</p>
-    </div>
-    <div class="field">
-      <div class="row"><label>옵토키네틱 패턴</label><span class="val teal" id="oknPatVal">점</span></div>
-      <div class="seg" id="oknPatSeg">
-        <button data-v="dots" class="on">점</button><button data-v="drum">줄무늬(드럼)</button>
-      </div>
-      <p class="hint">옵토키네틱 필드에만 적용됩니다. 줄무늬(드럼)는 고전적 흑백 줄무늬 자극입니다.</p>
-    </div>
-    <div class="field">
-      <div class="row"><label>이동 방향</label><span class="val teal" id="dirVal">좌우</span></div>
-      <div class="seg" id="dirSeg">
-        <button data-v="h" class="on">좌우</button><button data-v="v">상하</button><button data-v="r">회전</button>
-      </div>
-      <p class="hint">옵토키네틱 필드에만 적용됩니다.</p>
-    </div>
-    <div class="field">
-      <div class="row"><label>세션 길이</label><span class="val" id="durVal">3분</span></div>
-      <input type="range" id="dur" min="1" max="10" value="3" />
-    </div>
-  </div>
-
-  <div class="panel">
-    <h2>옵션</h2>
-    <div class="field toggle"><div><label>중앙 응시점 표시</label><p class="hint" style="margin-top:4px">고정점을 보면 자극이 약해집니다(난이도 낮춤).</p></div><div class="sw" id="fixSw"></div></div>
-    <div class="field toggle"><div><label>점진적 시작(램프업)</label><p class="hint" style="margin-top:4px">시작 후 강도를 서서히 끌어올립니다.</p></div><div class="sw on" id="rampSw"></div></div>
-    <div class="field toggle" style="margin-bottom:0"><div><label>지나가는 사람(군중)</label><p class="hint" style="margin-top:4px">마트 통로에 보행자를 추가해 시각 복잡도를 높입니다.</p></div><div class="sw" id="crowdSw"></div></div>
+    <h2>세부 설정</h2>
+    <div id="sceneOpts"></div>
+    <div id="commonOpts"></div>
   </div>
 
   <div class="start">
@@ -185,12 +149,16 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-/* ── 파라미터 (UI에서 읽음) ─────────────────────── */
-const params = { scene:'aisle', speed:0.4, density:'med', dir:'h', oknPattern:'dots', duration:180, fixation:false, ramp:true, crowd:false };
+/* ════════════════════════════════════════════════════════════
+   전정재활 멀티 세션 — 장면 레지스트리 + 공통 셸
+   공통: HUD·안전정지·램프업·자가평가는 모든 세션이 공유.
+   ════════════════════════════════════════════════════════════ */
+const params = { sceneId:'aisle', speed:0.4, duration:180, ramp:true, fixation:false };
+let opts = {};                 // 세션별 옵션(전환 시 기본값으로 리셋)
+let SS = {};                   // 세션 런타임 참조(빌드 시 리셋)
 const RAMP_SECONDS = 6;
-const AISLE_MAX_SPEED = 2.6;   // m/s
-const OKN_MAX_SPEED   = 0.9;   // rad/s
-const PERIOD = 6.0;            // 통로 반복 주기(m) — 끊김 없는 루프
+const PERIOD = 6.0;
+const lerp=(a,b,t)=>a+(b-a)*Math.max(0,Math.min(1,t));
 
 /* ── 렌더러/씬 ──────────────────────────────────── */
 const app=document.getElementById('app');
@@ -201,38 +169,39 @@ renderer.xr.enabled=true;
 app.appendChild(renderer.domElement);
 
 const scene=new THREE.Scene();
-const camera=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,0.1,200);
+const camera=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,0.1,300);
 camera.position.set(0,1.5,0);
 camera.rotation.order='YXZ';
 scene.add(camera);
 
 const hemi=new THREE.HemisphereLight(0xffffff,0x404a52,0.9); scene.add(hemi);
-const dir=new THREE.DirectionalLight(0xffffff,0.7); dir.position.set(3,6,2); scene.add(dir);
+const dlight=new THREE.DirectionalLight(0xffffff,0.7); dlight.position.set(3,6,2); scene.add(dlight);
 
-let world=new THREE.Group(); scene.add(world);   // 통로(이동) 컨테이너
-let oknGroup=new THREE.Group(); scene.add(oknGroup); // 옵토키네틱(회전) 컨테이너
-let crowdBodies=null, crowdHeads=null, crowdInfo=[]; // 마트 통로 군중(인스턴스)
-const crowdDummy=new THREE.Object3D();
+let world=new THREE.Group(); scene.add(world);   // 모든 세션의 콘텐츠 컨테이너
 
-/* ── HUD / 정지오버레이 / 응시점 (카메라 자식) ───── */
+/* ── HUD / 디밍 / 응시점 / 표적 레티클 (카메라 자식) ─ */
 const hudCanvas=document.createElement('canvas'); hudCanvas.width=900; hudCanvas.height=300;
 const hctx=hudCanvas.getContext('2d');
 const hudTex=new THREE.CanvasTexture(hudCanvas); hudTex.anisotropy=4;
 const hud=new THREE.Mesh(new THREE.PlaneGeometry(1.1,0.366),
   new THREE.MeshBasicMaterial({map:hudTex,transparent:true,depthTest:false}));
-hud.position.set(0,-0.42,-1.5); hud.renderOrder=999; camera.add(hud);
+hud.position.set(0,-0.46,-1.5); hud.renderOrder=999; camera.add(hud);
 
-const dim=new THREE.Mesh(new THREE.PlaneGeometry(6,6),
+const dim=new THREE.Mesh(new THREE.PlaneGeometry(8,8),
   new THREE.MeshBasicMaterial({color:0x070c0f,transparent:true,opacity:0,depthTest:false}));
 dim.position.set(0,0,-0.7); dim.renderOrder=998; camera.add(dim);
 
 const fixMat=new THREE.MeshBasicMaterial({color:0x3ec6b4,transparent:true,depthTest:false});
 const fix=new THREE.Group();
-const fa=new THREE.Mesh(new THREE.PlaneGeometry(0.06,0.012),fixMat);
-const fb=new THREE.Mesh(new THREE.PlaneGeometry(0.012,0.06),fixMat);
-fix.add(fa,fb); fix.position.set(0,0,-1.3); fix.renderOrder=1000; fix.visible=false; camera.add(fix);
+fix.add(new THREE.Mesh(new THREE.PlaneGeometry(0.06,0.012),fixMat),
+        new THREE.Mesh(new THREE.PlaneGeometry(0.012,0.06),fixMat));
+fix.position.set(0,0,-1.3); fix.renderOrder=1000; fix.visible=false; camera.add(fix);
 
-/* ── 장면 빌드 ──────────────────────────────────── */
+const reticle=new THREE.Mesh(new THREE.RingGeometry(0.018,0.026,24),
+  new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.85,depthTest:false}));
+reticle.position.set(0,0,-1.2); reticle.renderOrder=1000; reticle.visible=false; camera.add(reticle);
+
+/* ── 공통 유틸 ──────────────────────────────────── */
 function clearGroup(g){
   for(let i=g.children.length-1;i>=0;i--){
     const c=g.children[i];
@@ -242,167 +211,445 @@ function clearGroup(g){
     g.remove(c);
   }
 }
+const _dummy=new THREE.Object3D(), _col=new THREE.Color();
 
-function buildAisle(density){
-  clearGroup(world);
-  crowdBodies=null; crowdHeads=null; crowdInfo=[];
+/* ════════════════════════════════════════════════════════════
+   장면 레지스트리
+   각 세션: {name, group, hint, useSpeed, useFixation, defaults,
+             controls[], build(), update(dt,k,t), metric()}
+   ════════════════════════════════════════════════════════════ */
+const SCENES = {};
+
+/* ── 1. 마트 통로 (습관화) ──────────────────────── */
+SCENES.aisle = {
+  name:'마트 통로', group:'습관화 · 광학흐름', useSpeed:true, useFixation:true,
+  hint:'선반이 빽빽한 통로를 따라 앞으로 흐르는 광학 흐름에 노출됩니다.',
+  defaults:{density:'med', crowd:false},
+  controls:[
+    {k:'density',label:'시각 밀도',type:'seg',options:[['low','낮음'],['med','보통'],['high','높음']],hint:'화면을 채우는 시각 복잡도.'},
+    {k:'crowd',label:'지나가는 사람(군중)',type:'toggle',hint:'통로에 보행자를 추가해 시각 복잡도를 높입니다.'}
+  ],
+  build(){ buildAisle(opts.density, opts.crowd); },
+  update(dt,k,t){
+    world.position.z += 2.6*k*dt; if(world.position.z>=PERIOD) world.position.z-=PERIOD;
+    if(SS.crowdBodies && state==='running') updateCrowd(t);
+  },
+  metric(k){ return '강도 '+Math.round(k*100)+'%'; }
+};
+
+/* ── 2. 옵토키네틱 필드 (습관화) ────────────────── */
+SCENES.okn = {
+  name:'옵토키네틱', group:'습관화 · 광학흐름', useSpeed:true, useFixation:true,
+  hint:'전 시야를 채우는 점/줄무늬가 일정 속도로 움직이는 고전적 옵토키네틱 자극입니다.',
+  defaults:{pattern:'dots', dir:'h', density:'med'},
+  controls:[
+    {k:'pattern',label:'패턴',type:'seg',options:[['dots','점'],['drum','줄무늬(드럼)']],hint:'줄무늬(드럼)는 고전적 흑백 줄무늬 자극입니다.'},
+    {k:'dir',label:'이동 방향',type:'seg',options:[['h','좌우'],['v','상하'],['r','회전']]},
+    {k:'density',label:'시각 밀도',type:'seg',options:[['low','낮음'],['med','보통'],['high','높음']]}
+  ],
+  build(){ buildOKN(opts.density, opts.pattern, opts.dir); },
+  update(dt,k,t){
+    const w=0.9*k*dt;
+    if(opts.dir==='h') world.rotation.y+=w; else if(opts.dir==='v') world.rotation.x+=w; else world.rotation.z+=w;
+  },
+  metric(k){ return '강도 '+Math.round(k*100)+'%'; }
+};
+
+/* ── 3. 시선 안정화 VOR×1/×2 (시선안정화) ───────── */
+SCENES.vor = {
+  name:'시선 안정화 (VOR)', group:'시선 안정화 · 안구운동', useSpeed:false, useFixation:false,
+  hint:'표적을 응시한 채 박자에 맞춰 고개를 좌우/상하로 움직입니다. ×2는 표적이 반대로 움직여 난도가 높습니다.',
+  defaults:{mode:'x1', plane:'h', bpm:60},
+  controls:[
+    {k:'mode',label:'모드',type:'seg',options:[['x1','VOR×1'],['x2','VOR×2']],hint:'×1: 표적 고정 / ×2: 표적이 머리와 반대로 이동.'},
+    {k:'plane',label:'머리 회전면',type:'seg',options:[['h','좌우(yaw)'],['v','상하(pitch)']]},
+    {k:'bpm',label:'박자(고개 왕복)',type:'range',min:30,max:90,step:5,unit:' BPM',hint:'분당 고개 왕복 수. 또렷함이 유지되는 범위에서 점차 올리세요.'}
+  ],
+  build(){ buildTargetScene(0x101a20); SS.pace=0; SS.lastSign=0; },
+  update(dt,k,t){
+    const f=opts.bpm/120;                 // 좌-우 1왕복 = 1주기
+    const pace=Math.sin(2*Math.PI*f*t);   // -1..1 (가야 할 방향)
+    SS.pace=pace;
+    const amp=0.5*k;                       // ×2 표적 진폭(라디안 대용, m)
+    if(opts.mode==='x2' && SS.target){
+      if(opts.plane==='h'){ SS.target.position.x=-pace*amp; SS.target.position.y=0; }
+      else { SS.target.position.y=-pace*amp; SS.target.position.x=0; }
+    } else if(SS.target){ SS.target.position.set(0,0,SS.target.position.z); }
+    const sign=pace>=0?1:-1;               // 극점 통과 시 메트로놈 틱
+    if(sign!==SS.lastSign){ SS.lastSign=sign; chime(opts.plane==='h'?660:560,.06); }
+  },
+  metric(k){ return opts.mode.toUpperCase()+' · '+opts.bpm+'BPM'; }
+};
+
+/* ── 4. 전진/확장 광학흐름 터널 (습관화) ────────── */
+SCENES.flow = {
+  name:'전진 광학흐름(터널)', group:'습관화 · 광학흐름', useSpeed:true, useFixation:true,
+  hint:'점·고리가 다가오거나 멀어지는 전후 방향 광학 흐름(vection)입니다.',
+  defaults:{dir:'toward', density:'med'},
+  controls:[
+    {k:'dir',label:'흐름 방향',type:'seg',options:[['toward','다가옴(확장)'],['away','멀어짐(수축)']]},
+    {k:'density',label:'점 밀도',type:'seg',options:[['low','낮음'],['med','보통'],['high','높음']]}
+  ],
+  build(){ buildFlow(opts.density); },
+  update(dt,k,t){
+    const sgn=opts.dir==='toward'?1:-1, v=6*k*dt*sgn, far=-40, near=2.5;
+    const a=SS.flowPos, n=a.length/3;
+    for(let i=0;i<n;i++){ let z=a[i*3+2]+v; if(z>near){z-=(near-far);} else if(z<far){z+=(near-far);} a[i*3+2]=z; }
+    SS.flowGeo.attributes.position.needsUpdate=true;
+    if(SS.rings){ SS.rings.children.forEach(r=>{ r.position.z+=v; if(r.position.z>near)r.position.z-=(near-far); else if(r.position.z<far)r.position.z+=(near-far); }); }
+  },
+  metric(k){ return '강도 '+Math.round(k*100)+'%'; }
+};
+
+/* ── 5. 추종·단속 안구운동 (안구운동) ───────────── */
+SCENES.pursuit = {
+  name:'추종·단속 안구운동', group:'시선 안정화 · 안구운동', useSpeed:true, useFixation:false,
+  hint:'머리는 고정하고 눈으로만 표적을 따라가거나(추종) 도약(단속)합니다.',
+  defaults:{mode:'pursuit', plane:'h', amp:1.2},
+  controls:[
+    {k:'mode',label:'모드',type:'seg',options:[['pursuit','추종(부드럽게)'],['saccade','단속(도약)']]},
+    {k:'plane',label:'방향',type:'seg',options:[['h','좌우'],['v','상하'],['d','대각']]},
+    {k:'amp',label:'진폭',type:'range',min:0.4,max:2.2,step:0.1,unit:' m',hint:'표적이 움직이는 폭.'}
+  ],
+  build(){ buildTargetScene(0x0e1620); SS.sacT=0; SS.sacToggle=1; },
+  update(dt,k,t){
+    if(!SS.target) return;
+    const A=opts.amp; let x=0,y=0;
+    if(opts.mode==='pursuit'){
+      const p=Math.sin(2*Math.PI*(0.25+0.35*k)*t);
+      x=p*A; y=p*A;
+    } else {
+      SS.sacT+=dt; const interval=Math.max(0.5,1.2-0.6*k);
+      if(SS.sacT>=interval){ SS.sacT=0; SS.sacToggle*=-1; chime(620,.05); }
+      x=SS.sacToggle*A; y=SS.sacToggle*A;
+    }
+    if(opts.plane==='h'){ SS.target.position.set(x,0,SS.targetZ); }
+    else if(opts.plane==='v'){ SS.target.position.set(0,y,SS.targetZ); }
+    else { SS.target.position.set(x,y*0.7,SS.targetZ); }
+  },
+  metric(k){ return opts.mode==='pursuit'?'추종':'단속'; }
+};
+
+/* ── 6. 번화가·횡단보도 (환경 노출) ─────────────── */
+SCENES.street = {
+  name:'번화가·횡단보도', group:'환경 노출', useSpeed:true, useFixation:true,
+  hint:'건물 사이 거리를 전진하며 횡단보도에서 보행자가 가로질러 지나갑니다.',
+  defaults:{crowd:'med'},
+  controls:[
+    {k:'crowd',label:'보행자 밀도',type:'seg',options:[['low','낮음'],['med','보통'],['high','높음']]}
+  ],
+  build(){ buildStreet(opts.crowd); },
+  update(dt,k,t){
+    world.position.z += 2.4*k*dt; if(world.position.z>=PERIOD) world.position.z-=PERIOD;
+    if(SS.cross && state==='running') updateCross(dt);
+  },
+  metric(k){ return '강도 '+Math.round(k*100)+'%'; }
+};
+
+/* ── 7. 에스컬레이터 (환경 노출) ────────────────── */
+SCENES.escalator = {
+  name:'에스컬레이터', group:'환경 노출', useSpeed:true, useFixation:true,
+  hint:'경사진 계단·난간이 일정 속도로 흘러 강한 전후 vection을 만듭니다.',
+  defaults:{dir:'up'},
+  controls:[
+    {k:'dir',label:'진행',type:'seg',options:[['up','상승'],['down','하강']]}
+  ],
+  build(){ buildEscalator(); },
+  update(dt,k,t){
+    const sgn=opts.dir==='up'?-1:1;        // 계단이 흐르는 방향
+    SS.escOff=(SS.escOff + 1.6*k*dt*sgn);
+    const d=SS.escStep; let o=SS.escOff % d; if(o<0)o+=d;
+    const iv=SS.inc;                       // 경사 단위벡터
+    SS.escGroup.position.set(iv.x*o, iv.y*o, iv.z*o);
+  },
+  metric(k){ return '강도 '+Math.round(k*100)+'%'; }
+};
+
+/* ── 8. 격자/체커보드 전시야 (습관화) ───────────── */
+SCENES.grating = {
+  name:'격자/체커보드', group:'습관화 · 광학흐름', useSpeed:true, useFixation:true,
+  hint:'공간주파수·대비를 단계화한 전시야 패턴이 흐릅니다.',
+  defaults:{pattern:'checker', sf:4, contrast:0.8, dir:'h'},
+  controls:[
+    {k:'pattern',label:'패턴',type:'seg',options:[['checker','체커보드'],['stripe','줄무늬']]},
+    {k:'sf',label:'공간주파수',type:'range',min:1,max:8,step:1,unit:' 회',hint:'시야를 채우는 반복 수(높을수록 촘촘).'},
+    {k:'contrast',label:'대비',type:'range',min:0.2,max:1,step:0.1,fmt:v=>Math.round(v*100)+'%'},
+    {k:'dir',label:'흐름 방향',type:'seg',options:[['h','좌우'],['v','상하']]}
+  ],
+  build(){ buildGrating(opts.pattern, opts.sf, opts.contrast); },
+  update(dt,k,t){
+    if(!SS.tex) return; const v=0.08*k*dt*opts.sf;
+    if(opts.dir==='h') SS.tex.offset.x+=v; else SS.tex.offset.y+=v;
+  },
+  metric(k){ return '강도 '+Math.round(k*100)+'%'; }
+};
+
+/* ── 9. 흔들리는 방 (시각 의존) ─────────────────── */
+SCENES.room = {
+  name:'흔들리는 방', group:'시각 의존 · 균형', useSpeed:true, useFixation:true,
+  hint:'방 전체가 천천히 기울거나 흔들려 시각-전정 충돌을 유발합니다(시각 의존 도전). 앉은 자세 권장.',
+  defaults:{axis:'roll', freq:0.2},
+  controls:[
+    {k:'axis',label:'움직임',type:'seg',options:[['roll','좌우 기울임'],['pitch','앞뒤 기울임'],['sway','좌우 평행이동']]},
+    {k:'freq',label:'속도',type:'range',min:0.1,max:0.5,step:0.05,unit:' Hz'}
+  ],
+  build(){ buildRoom(); },
+  update(dt,k,t){
+    const ph=Math.sin(2*Math.PI*opts.freq*t);
+    world.position.set(0,0,0); world.rotation.set(0,0,0);
+    if(opts.axis==='roll') world.rotation.z=ph*0.18*k;
+    else if(opts.axis==='pitch') world.rotation.x=ph*0.16*k;
+    else world.position.x=ph*0.6*k;
+  },
+  metric(k){ return '강도 '+Math.round(k*100)+'%'; }
+};
+
+/* ── 10. 표적 맞히기 게임 (시선 드웰) ───────────── */
+SCENES.targets = {
+  name:'표적 맞히기', group:'시선 안정화 · 안구운동', useSpeed:true, useFixation:false,
+  hint:'표적을 시선 중앙(레티클)으로 맞춰 잠시 머물면 명중합니다. 순응도를 높이는 게임형 세션.',
+  defaults:{count:'med', size:'med'},
+  controls:[
+    {k:'count',label:'동시 표적 수',type:'seg',options:[['low','적게'],['med','보통'],['high','많이']]},
+    {k:'size',label:'표적 크기',type:'seg',options:[['low','작게'],['med','보통'],['high','크게']]}
+  ],
+  build(){ buildTargets(opts.count, opts.size); reticle.visible=true; },
+  update(dt,k,t){ updateTargets(dt); },
+  metric(k){ return '점수 '+(SS.score||0); }
+};
+
+const SCENE_ORDER=['aisle','okn','flow','grating','vor','pursuit','targets','street','escalator','room'];
+
+/* ════════════════════════════════════════════════════════════
+   개별 빌더
+   ════════════════════════════════════════════════════════════ */
+function buildAisle(density, crowd){
   const LEN=60, half=2.2;
-  // 바닥/천장/뒷판
   const floorMat=new THREE.MeshStandardMaterial({color:0x9aa0a6,roughness:1});
-  const floor=new THREE.Mesh(new THREE.BoxGeometry(half*2,0.05,LEN),floorMat);
-  floor.position.set(0,0,-LEN/2); world.add(floor);
+  world.add(mkBox(half*2,0.05,LEN,floorMat,0,0,-LEN/2));
   const ceilMat=new THREE.MeshStandardMaterial({color:0xdfe4e8,roughness:1});
-  const ceil=new THREE.Mesh(new THREE.BoxGeometry(half*2,0.05,LEN),ceilMat); ceil.position.set(0,2.5,-LEN/2); world.add(ceil);
+  world.add(mkBox(half*2,0.05,LEN,ceilMat,0,2.5,-LEN/2));
   const backMat=new THREE.MeshStandardMaterial({color:0xeef1f3,roughness:1});
-  [-1,1].forEach(s=>{ const b=new THREE.Mesh(new THREE.BoxGeometry(0.1,2.5,LEN),backMat); b.position.set(s*half,1.25,-LEN/2); world.add(b); });
-  // 선반 슬랩
+  [-1,1].forEach(s=>world.add(mkBox(0.1,2.5,LEN,backMat,s*half,1.25,-LEN/2)));
   const shelfMat=new THREE.MeshStandardMaterial({color:0xc7ccd1,roughness:1});
   const heights=[0.5,1.0,1.5,2.0];
-  [-1,1].forEach(s=>heights.forEach(h=>{ const sh=new THREE.Mesh(new THREE.BoxGeometry(0.42,0.04,LEN),shelfMat); sh.position.set(s*(half-0.24),h,-LEN/2); world.add(sh); }));
+  [-1,1].forEach(s=>heights.forEach(h=>world.add(mkBox(0.42,0.04,LEN,shelfMat,s*(half-0.24),h,-LEN/2))));
 
-  // 상품(인스턴스) — 주기적 배치로 끊김 없음
   const palette=[0xe6542f,0xf2a541,0xf6d24b,0x6fb84a,0x2f9e8f,0x3a78c2,0x8a5bbf,0xd94f8a,0xe8e2d6,0xb0453a];
-  const step=0.4, stepsPerPeriod=Math.round(PERIOD/step); // 15
+  const step=0.4, stepsPerPeriod=Math.round(PERIOD/step);
   const skip = density==='low'?3 : density==='high'?1 : 2;
-  const inst=[];
-  const totalSteps=Math.floor(LEN/step);
+  const inst=[], totalSteps=Math.floor(LEN/step);
   for(let zi=0; zi<totalSteps; zi++){
     if(((zi%stepsPerPeriod)%skip)!==0) continue;
     const z=-1.0 - zi*step;
-    [-1,1].forEach(side=>{
-      heights.forEach((h,hi)=>{
-        const seed=((zi%stepsPerPeriod)*53 + hi*17 + (side>0?7:0))%palette.length;
-        const w=0.16+ (seed%3)*0.05, ht=0.18+(seed%4)*0.05;
-        inst.push({x:side*(half-0.30), y:h+0.04+ht/2, z, w, h:ht, color:palette[seed]});
-      });
-    });
+    [-1,1].forEach(side=>heights.forEach((h,hi)=>{
+      const seed=((zi%stepsPerPeriod)*53 + hi*17 + (side>0?7:0))%palette.length;
+      const w=0.16+(seed%3)*0.05, ht=0.18+(seed%4)*0.05;
+      inst.push({x:side*(half-0.30), y:h+0.04+ht/2, z, w, h:ht, color:palette[seed]});
+    }));
   }
-  const geo=new THREE.BoxGeometry(1,1,1);
-  const mat=new THREE.MeshStandardMaterial({roughness:.75});
-  const im=new THREE.InstancedMesh(geo,mat,inst.length);
-  const dummy=new THREE.Object3D(); const col=new THREE.Color();
-  inst.forEach((it,i)=>{
-    dummy.position.set(it.x,it.y,it.z); dummy.scale.set(it.w,it.h,it.w); dummy.updateMatrix();
-    im.setMatrixAt(i,dummy.matrix); im.setColorAt(i,col.setHex(it.color));
-  });
+  const im=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({roughness:.75}),inst.length);
+  inst.forEach((it,i)=>{ _dummy.position.set(it.x,it.y,it.z); _dummy.scale.set(it.w,it.h,it.w); _dummy.rotation.set(0,0,0); _dummy.updateMatrix();
+    im.setMatrixAt(i,_dummy.matrix); im.setColorAt(i,_col.setHex(it.color)); });
   im.instanceMatrix.needsUpdate=true; if(im.instanceColor)im.instanceColor.needsUpdate=true;
   world.add(im);
-  if(params.crowd) buildCrowd(LEN);
-  world.position.set(0,0,0);
-  scene.background=new THREE.Color(0xc9d2d8);
-  scene.fog=new THREE.FogExp2(0xc9d2d8,0.045);
-  hemi.intensity=0.95; dir.intensity=0.7;
+  if(crowd) buildCrowd(LEN);
+  scene.background=new THREE.Color(0xc9d2d8); scene.fog=new THREE.FogExp2(0xc9d2d8,0.045);
+  hemi.intensity=0.95; dlight.intensity=0.7;
 }
-
-// 통로 보행자(군중) — PERIOD(6m)마다 동일 패턴(spacing 1.5 → 4명/주기)으로 끊김 없음
 function buildCrowd(LEN){
-  const spacing=1.5;                 // PERIOD/spacing = 4 (정수) → wrap 시 이음매 없음
-  const N=Math.floor((LEN-3)/spacing);
-  // 4종 보행자 원형(주기 내 위치/색/키/보행위상). i%4로 반복 → 끊김 없음.
-  const arche=[
-    {x:-1.05, c:0x3a4a6b, h:1.02, ph:0.0},
-    {x: 0.95, c:0x6b3a3a, h:1.10, ph:1.7},
-    {x:-0.25, c:0x37624a, h:0.95, ph:3.3},
-    {x: 0.35, c:0x6b5a3a, h:1.06, ph:4.9}
-  ];
-  const bodyGeo=new THREE.CylinderGeometry(0.15,0.20,1.0,8);
-  const bodyMat=new THREE.MeshStandardMaterial({roughness:0.9});
-  const headGeo=new THREE.SphereGeometry(0.13,10,8);
-  const headMat=new THREE.MeshStandardMaterial({color:0xd9a877,roughness:0.85});
-  crowdBodies=new THREE.InstancedMesh(bodyGeo,bodyMat,N);
-  crowdHeads =new THREE.InstancedMesh(headGeo,headMat,N);
-  const col=new THREE.Color();
-  for(let i=0;i<N;i++){
-    const a=arche[i%4], z=-3.0 - i*spacing;
-    crowdInfo.push({x:a.x, z, h:a.h, ph:a.ph});
-    crowdBodies.setColorAt(i,col.setHex(a.c));
-  }
-  if(crowdBodies.instanceColor) crowdBodies.instanceColor.needsUpdate=true;
-  updateCrowd(0);                    // 초기 자세 한 번 적용
-  world.add(crowdBodies); world.add(crowdHeads);
+  const spacing=1.5, N=Math.floor((LEN-3)/spacing);
+  const arche=[{x:-1.05,c:0x3a4a6b,h:1.02,ph:0.0},{x:0.95,c:0x6b3a3a,h:1.10,ph:1.7},
+               {x:-0.25,c:0x37624a,h:0.95,ph:3.3},{x:0.35,c:0x6b5a3a,h:1.06,ph:4.9}];
+  SS.crowdBodies=new THREE.InstancedMesh(new THREE.CylinderGeometry(0.15,0.20,1.0,8),new THREE.MeshStandardMaterial({roughness:0.9}),N);
+  SS.crowdHeads =new THREE.InstancedMesh(new THREE.SphereGeometry(0.13,10,8),new THREE.MeshStandardMaterial({color:0xd9a877,roughness:0.85}),N);
+  SS.crowdInfo=[];
+  for(let i=0;i<N;i++){ const a=arche[i%4]; SS.crowdInfo.push({x:a.x,z:-3.0-i*spacing,h:a.h,ph:a.ph}); SS.crowdBodies.setColorAt(i,_col.setHex(a.c)); }
+  if(SS.crowdBodies.instanceColor) SS.crowdBodies.instanceColor.needsUpdate=true;
+  updateCrowd(0); world.add(SS.crowdBodies); world.add(SS.crowdHeads);
 }
-
-// 매 프레임 가벼운 걸음 흔들림(상하/좌우). 위상은 원형별 고정값이라 wrap 후에도 동일.
 function updateCrowd(t){
-  if(!crowdBodies) return;
-  for(let i=0;i<crowdInfo.length;i++){
-    const p=crowdInfo[i];
-    const yb=Math.sin(t*3.2+p.ph)*0.04, xb=Math.sin(t*3.2+p.ph)*0.03;
-    crowdDummy.position.set(p.x+xb, 0.5*p.h+yb, p.z); crowdDummy.scale.set(1,p.h,1);
-    crowdDummy.rotation.set(0,0,0); crowdDummy.updateMatrix();
-    crowdBodies.setMatrixAt(i,crowdDummy.matrix);
-    crowdDummy.position.set(p.x+xb, 1.12*p.h+yb, p.z); crowdDummy.scale.set(1,1,1); crowdDummy.updateMatrix();
-    crowdHeads.setMatrixAt(i,crowdDummy.matrix);
-  }
-  crowdBodies.instanceMatrix.needsUpdate=true; crowdHeads.instanceMatrix.needsUpdate=true;
+  const B=SS.crowdBodies,H=SS.crowdHeads,info=SS.crowdInfo; if(!B)return;
+  for(let i=0;i<info.length;i++){ const p=info[i], yb=Math.sin(t*3.2+p.ph)*0.04, xb=Math.sin(t*3.2+p.ph)*0.03;
+    _dummy.position.set(p.x+xb,0.5*p.h+yb,p.z); _dummy.scale.set(1,p.h,1); _dummy.rotation.set(0,0,0); _dummy.updateMatrix(); B.setMatrixAt(i,_dummy.matrix);
+    _dummy.position.set(p.x+xb,1.12*p.h+yb,p.z); _dummy.scale.set(1,1,1); _dummy.updateMatrix(); H.setMatrixAt(i,_dummy.matrix); }
+  B.instanceMatrix.needsUpdate=true; H.instanceMatrix.needsUpdate=true;
 }
 
-function buildOKN(density){
-  clearGroup(oknGroup);
-  if(params.oknPattern==='drum') buildOKNDrum(density);
-  else buildOKNDots(density);
-  oknGroup.rotation.set(0,0,0);
-  scene.background=new THREE.Color(0x9fb0b8);
-  scene.fog=null;
-  hemi.intensity=1.0; dir.intensity=0.3;
+function buildOKN(density, pattern, dir){
+  if(pattern==='drum') buildOKNDrum(density,dir); else buildOKNDots(density);
+  scene.background=new THREE.Color(0x9fb0b8); scene.fog=null; hemi.intensity=1.0; dlight.intensity=0.3;
 }
-
 function buildOKNDots(density){
-  const n = density==='low'?500 : density==='high'?1800 : 1000;
-  const R=14, pos=new Float32Array(n*3);
-  for(let i=0;i<n;i++){
-    const u=Math.random()*2-1, t=Math.random()*Math.PI*2, r=Math.sqrt(1-u*u);
-    pos[i*3]=R*r*Math.cos(t); pos[i*3+1]=R*u; pos[i*3+2]=R*r*Math.sin(t);
-  }
+  const n = density==='low'?500 : density==='high'?1800 : 1000, R=14, pos=new Float32Array(n*3);
+  for(let i=0;i<n;i++){ const u=Math.random()*2-1,t=Math.random()*Math.PI*2,r=Math.sqrt(1-u*u);
+    pos[i*3]=R*r*Math.cos(t); pos[i*3+1]=R*u; pos[i*3+2]=R*r*Math.sin(t); }
   const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3));
-  const m=new THREE.PointsMaterial({color:0x223038,size:0.32});
-  oknGroup.add(new THREE.Points(g,m));
+  world.add(new THREE.Points(g,new THREE.PointsMaterial({color:0x223038,size:0.32})));
 }
-
-// 고전적 옵토키네틱 드럼 — 흑백 줄무늬. 방향에 따라 줄무늬가 운동에 직교하도록 정렬.
-function buildOKNDrum(density){
+function buildOKNDrum(density,dir){
   const stripeMat=new THREE.MeshBasicMaterial({color:0x10171d,side:THREE.DoubleSide});
-  if(params.dir==='r'){
-    // 회전: 중심에서 뻗는 방사형 핀휠(파이 슬라이스) — Z축(롤) 회전
-    const count = density==='low'?8 : density==='high'?18 : 12;
-    const len=22, z=-12, barW=len*0.14;
-    for(let i=0;i<count;i++){
-      const bar=new THREE.Mesh(new THREE.PlaneGeometry(barW,len),stripeMat);
-      bar.position.y=len/2;                 // 중심에서 바깥으로 방사
-      const piv=new THREE.Group(); piv.add(bar);
-      piv.position.z=z; piv.rotation.z=i*(2*Math.PI/count);
-      oknGroup.add(piv);
-    }
+  if(dir==='r'){
+    const count=density==='low'?8:density==='high'?18:12, len=22,z=-12,barW=len*0.14;
+    for(let i=0;i<count;i++){ const bar=new THREE.Mesh(new THREE.PlaneGeometry(barW,len),stripeMat); bar.position.y=len/2;
+      const piv=new THREE.Group(); piv.add(bar); piv.position.z=z; piv.rotation.z=i*(2*Math.PI/count); world.add(piv); }
   } else {
-    // 좌우(Y축) / 상하(X축): 원통 세로 줄무늬, 상하는 90° 눕혀 가로 줄무늬로
-    const R=12, H=24;
-    const count = density==='low'?14 : density==='high'?34 : 22;
-    const arc=2*Math.PI/count, stripeW=R*arc*0.55;
+    const R=12,H=24,count=density==='low'?14:density==='high'?34:22,arc=2*Math.PI/count,stripeW=R*arc*0.55;
     const drum=new THREE.Group();
-    for(let i=0;i<count;i++){
-      const th=i*arc;
-      const s=new THREE.Mesh(new THREE.PlaneGeometry(stripeW,H),stripeMat);
-      s.position.set(R*Math.cos(th),0,R*Math.sin(th));
-      s.lookAt(0,0,0);
-      drum.add(s);
-    }
-    if(params.dir==='v') drum.rotation.z=Math.PI/2;   // 원통축 Y→X, 줄무늬 세로→가로
-    oknGroup.add(drum);
+    for(let i=0;i<count;i++){ const th=i*arc,s=new THREE.Mesh(new THREE.PlaneGeometry(stripeW,H),stripeMat);
+      s.position.set(R*Math.cos(th),0,R*Math.sin(th)); s.lookAt(0,0,0); drum.add(s); }
+    if(dir==='v') drum.rotation.z=Math.PI/2; world.add(drum);
   }
 }
 
-function buildScene(){
-  clearGroup(world); clearGroup(oknGroup);
-  crowdBodies=null; crowdHeads=null; crowdInfo=[];
-  if(params.scene==='aisle'){ buildAisle(params.density); }
-  else { buildOKN(params.density); }
-  fix.visible=params.fixation;
+// VOR/추종/단속 공용 — 표적 + 약한 배경 격자
+function buildTargetScene(bg){
+  SS.targetZ=-2.0;
+  const t=new THREE.Group();
+  t.add(new THREE.Mesh(new THREE.CircleGeometry(0.09,24),new THREE.MeshBasicMaterial({color:0xe8a23c})));
+  t.add(new THREE.Mesh(new THREE.RingGeometry(0.11,0.13,24),new THREE.MeshBasicMaterial({color:0xffffff})));
+  t.position.set(0,0,SS.targetZ); world.add(t); SS.target=t;
+  // 옅은 배경 점(공간 기준)
+  const n=140,R=9,pos=new Float32Array(n*3);
+  for(let i=0;i<n;i++){ const u=Math.random()*2-1,a=Math.random()*Math.PI*2,r=Math.sqrt(1-u*u);
+    pos[i*3]=R*r*Math.cos(a); pos[i*3+1]=R*u; pos[i*3+2]=-Math.abs(R*r*Math.sin(a))-2; }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  world.add(new THREE.Points(g,new THREE.PointsMaterial({color:0x33414a,size:0.12})));
+  scene.background=new THREE.Color(bg); scene.fog=null; hemi.intensity=0.9; dlight.intensity=0.4;
 }
 
-/* ── 상태머신 ───────────────────────────────────── */
-let state='idle';      // idle|running|paused|done
+function buildFlow(density){
+  const n=density==='low'?260:density==='high'?900:500, far=-40, near=2.5, span=near-far;
+  const pos=new Float32Array(n*3);
+  for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2, rad=1.2+Math.random()*7;
+    pos[i*3]=Math.cos(a)*rad; pos[i*3+1]=Math.sin(a)*rad*0.7+1.4; pos[i*3+2]=far+Math.random()*span; }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  world.add(new THREE.Points(g,new THREE.PointsMaterial({color:0xdfe7ec,size:0.18})));
+  SS.flowGeo=g; SS.flowPos=pos;
+  // 터널 고리(깊이감)
+  const rings=new THREE.Group();
+  for(let z=near; z>far; z-=3){ const r=new THREE.Mesh(new THREE.TorusGeometry(6,0.04,8,40),
+      new THREE.MeshBasicMaterial({color:0x4a6470})); r.position.set(0,1.4,z); rings.add(r); }
+  world.add(rings); SS.rings=rings;
+  scene.background=new THREE.Color(0x0a1014); scene.fog=new THREE.FogExp2(0x0a1014,0.03); hemi.intensity=0.8; dlight.intensity=0.4;
+}
+
+function buildStreet(crowdLvl){
+  const LEN=60;
+  world.add(mkBox(10,0.05,LEN,new THREE.MeshStandardMaterial({color:0x4a4f55,roughness:1}),0,0,-LEN/2)); // 도로
+  // 횡단보도 줄무늬(주기적)
+  const cw=new THREE.MeshStandardMaterial({color:0xe8eaec,roughness:1});
+  for(let z=-3; z>-LEN; z-=PERIOD){ for(let x=-2.4;x<=2.4;x+=0.8){ world.add(mkBox(0.5,0.02,1.4,cw,x,0.03,z)); } }
+  // 양옆 건물(주기적: PERIOD마다 동일 → 끊김 없음)
+  const bcol=[0x6b6f76,0x7a6e62,0x5d6b72,0x746a72];
+  for(let zi=0, z=-2; z>-LEN; z-=3, zi++){ [-1,1].forEach(s=>{
+    const h=4+((zi%2)?3:0), c=bcol[(zi%2)*2+(s>0?1:0)];
+    world.add(mkBox(3,h,2.6,new THREE.MeshStandardMaterial({color:c,roughness:1}),s*5.2,h/2,z)); }); }
+  // 횡단 보행자
+  const N=crowdLvl==='low'?5:crowdLvl==='high'?12:8;
+  SS.cross=new THREE.InstancedMesh(new THREE.CylinderGeometry(0.16,0.2,1.05,8),new THREE.MeshStandardMaterial({roughness:0.9}),N);
+  SS.crossHead=new THREE.InstancedMesh(new THREE.SphereGeometry(0.13,10,8),new THREE.MeshStandardMaterial({color:0xd9a877}),N);
+  SS.crossInfo=[];
+  const pcol=[0x33415f,0x5f3333,0x33513f,0x5a4a6b,0x4a4a4a];
+  for(let i=0;i<N;i++){ SS.crossInfo.push({x:-4+Math.random()*8, z:-4-Math.random()*22, vx:(Math.random()<.5?-1:1)*(0.6+Math.random()*0.5)});
+    SS.cross.setColorAt(i,_col.setHex(pcol[i%pcol.length])); }
+  if(SS.cross.instanceColor)SS.cross.instanceColor.needsUpdate=true;
+  updateCross(0); world.add(SS.cross); world.add(SS.crossHead);
+  scene.background=new THREE.Color(0x9aa7b0); scene.fog=new THREE.FogExp2(0x9aa7b0,0.03); hemi.intensity=1.0; dlight.intensity=0.6;
+}
+function updateCross(dt){
+  const C=SS.cross,H=SS.crossHead,info=SS.crossInfo; if(!C)return;
+  for(let i=0;i<info.length;i++){ const p=info[i]; p.x+=p.vx*dt; if(p.x>4.2)p.x=-4.2; else if(p.x<-4.2)p.x=4.2;
+    _dummy.position.set(p.x,0.55,p.z); _dummy.scale.set(1,1,1); _dummy.rotation.set(0,0,0); _dummy.updateMatrix(); C.setMatrixAt(i,_dummy.matrix);
+    _dummy.position.set(p.x,1.2,p.z); _dummy.updateMatrix(); H.setMatrixAt(i,_dummy.matrix); }
+  C.instanceMatrix.needsUpdate=true; H.instanceMatrix.needsUpdate=true;
+}
+
+function buildEscalator(){
+  const th=22*Math.PI/180; SS.inc=new THREE.Vector3(0,Math.sin(th),-Math.cos(th));
+  const d=0.5; SS.escStep=d; SS.escOff=0;
+  const grp=new THREE.Group(); const stepMat=new THREE.MeshStandardMaterial({color:0x8a9098,roughness:1});
+  const L=44, count=Math.floor(L/d);
+  for(let i=0;i<count;i++){ const o=i*d, st=mkBox(2.2,0.16,0.46,stepMat, SS.inc.x*o, 0.1+SS.inc.y*o, -2+SS.inc.z*o); grp.add(st); }
+  world.add(grp); SS.escGroup=grp;
+  // 난간(정지)
+  const rmat=new THREE.MeshStandardMaterial({color:0x2f3a42,roughness:1});
+  [-1,1].forEach(s=>{ const rail=mkBox(0.12,0.6,L, rmat, s*1.2, 0.9+SS.inc.y*(L/2)*0.5, -2+SS.inc.z*(L/2)); rail.rotation.x=-th; world.add(rail); });
+  world.add(mkBox(14,0.05,14,new THREE.MeshStandardMaterial({color:0x3a4046,roughness:1}),0,-0.1,-2));
+  scene.background=new THREE.Color(0x6b757d); scene.fog=new THREE.FogExp2(0x6b757d,0.03); hemi.intensity=0.95; dlight.intensity=0.6;
+}
+
+function buildGrating(pattern, sf, contrast){
+  const cv=document.createElement('canvas'); cv.width=cv.height=256; const c=cv.getContext('2d');
+  const lo=Math.round(128-127*contrast), hi=Math.round(128+127*contrast);
+  const A='rgb('+lo+','+lo+','+lo+')', B='rgb('+hi+','+hi+','+hi+')';
+  c.fillStyle=A; c.fillRect(0,0,256,256); c.fillStyle=B;
+  if(pattern==='checker'){ c.fillRect(0,0,128,128); c.fillRect(128,128,128,128); }
+  else { c.fillRect(0,0,128,256); }
+  const tex=new THREE.CanvasTexture(cv); tex.wrapS=tex.wrapT=THREE.RepeatWrapping; tex.repeat.set(sf,sf);
+  world.add(new THREE.Mesh(new THREE.SphereGeometry(40,32,24),new THREE.MeshBasicMaterial({map:tex,side:THREE.BackSide})));
+  SS.tex=tex; scene.background=null; scene.fog=null; hemi.intensity=1.0; dlight.intensity=0.2;
+}
+
+function buildRoom(){
+  const wall=new THREE.MeshStandardMaterial({color:0xcfd6da,roughness:1}),
+        floorM=new THREE.MeshStandardMaterial({color:0x8a7d6e,roughness:1}),
+        ceilM=new THREE.MeshStandardMaterial({color:0xe6eaec,roughness:1});
+  const W=6,H=3,D=6;
+  world.add(mkBox(W,0.1,D,floorM,0,0,-1));
+  world.add(mkBox(W,0.1,D,ceilM,0,H,-1));
+  world.add(mkBox(0.1,H,D,wall,-W/2,H/2,-1)); world.add(mkBox(0.1,H,D,wall,W/2,H/2,-1));
+  world.add(mkBox(W,H,0.1,wall,0,H/2,-1-D/2));
+  // 시각 기준물(그림·가구)
+  const pic=[0xe06a4a,0x4a78c2,0x4aa06a];
+  pic.forEach((col,i)=>world.add(mkBox(0.7,0.5,0.04,new THREE.MeshStandardMaterial({color:col,roughness:.8}), -1.5+i*1.5, 1.7, -1-D/2+0.06)));
+  world.add(mkBox(1.2,0.5,0.5,new THREE.MeshStandardMaterial({color:0x6b5a45,roughness:1}), -1.8,0.25,-2.6));
+  world.add(mkBox(0.9,0.8,0.5,new THREE.MeshStandardMaterial({color:0x556070,roughness:1}), 1.9,0.4,-2.6));
+  scene.background=new THREE.Color(0xb9c2c8); scene.fog=null; hemi.intensity=1.0; dlight.intensity=0.5;
+}
+
+function buildTargets(count,size){
+  SS.targets=[]; SS.score=0;
+  const N=count==='low'?2:count==='high'?4:3;
+  const rad=size==='low'?0.12:size==='high'?0.26:0.18; SS.tRad=rad;
+  for(let i=0;i<N;i++){ const m=new THREE.Mesh(new THREE.SphereGeometry(rad,16,12),new THREE.MeshStandardMaterial({color:0x3ec6b4,emissive:0x10403a}));
+    placeTarget(m); m.userData={dwell:0}; world.add(m); SS.targets.push(m); }
+  scene.background=new THREE.Color(0x10181e); scene.fog=null; hemi.intensity=1.0; dlight.intensity=0.5;
+}
+function placeTarget(m){ m.position.set(-3+Math.random()*6, 0.7+Math.random()*1.8, -2.5-Math.random()*3); m.userData&&(m.userData.dwell=0); m.scale.setScalar(1); }
+const _fwd=new THREE.Vector3(), _cp=new THREE.Vector3(), _tp=new THREE.Vector3();
+function updateTargets(dt){
+  if(!SS.targets)return;
+  camera.getWorldDirection(_fwd); camera.getWorldPosition(_cp);
+  SS.targets.forEach(m=>{
+    _tp.copy(m.position).sub(_cp).normalize();
+    const ang=_fwd.angleTo(_tp);
+    if(ang<0.06){ m.userData.dwell+=dt; m.material.emissive.setHex(0x2a8a7a);
+      if(m.userData.dwell>0.7){ SS.score++; chime(720,.12); setTimeout(()=>chime(880,.12),90); placeTarget(m); m.material.emissive.setHex(0x10403a); } }
+    else { m.userData.dwell=Math.max(0,m.userData.dwell-dt*2); m.material.emissive.setHex(0x10403a); }
+    m.scale.setScalar(1+Math.min(0.6,m.userData.dwell));
+  });
+}
+
+function mkBox(w,h,d,mat,x,y,z){ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat); m.position.set(x,y,z); return m; }
+
+/* ── 장면 빌드 진입점 ──────────────────────────── */
+function buildScene(){
+  clearGroup(world);
+  world.position.set(0,0,0); world.rotation.set(0,0,0);
+  SS={};
+  reticle.visible=false;
+  const sc=SCENES[params.sceneId];
+  sc.build();
+  fix.visible = (sc.useFixation && params.fixation);
+}
+
+/* ════════════════════════════════════════════════════════════
+   상태머신 · 오디오 · HUD · 루프
+   ════════════════════════════════════════════════════════════ */
+let state='idle';
 let tStart=0, tElapsed=0, ramp=0;
-let sessionCompleted=false, lastSessionCtx=null;  // 자가평가 기록용
+let sessionCompleted=false, lastSessionCtx=null;
 function startSession(){ buildScene(); state='running'; tStart=performance.now(); tElapsed=0; ramp=params.ramp?0:1; sessionCompleted=false; chime(440,.4); }
 function togglePause(){
   if(state==='running'){ state='paused'; chime(330,.4); }
@@ -410,109 +657,148 @@ function togglePause(){
   else if(state==='done'){ startSession(); }
 }
 
-/* ── 오디오 ─────────────────────────────────────── */
 let actx=null;
 function initAudio(){ if(!actx){ try{actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){} } }
 function chime(f,d){ if(!actx)return; const o=actx.createOscillator(),g=actx.createGain();
   o.type='sine';o.frequency.value=f;o.connect(g);g.connect(actx.destination);
-  const t=actx.currentTime;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.15,t+.05);
+  const t=actx.currentTime;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.13,t+.04);
   g.gain.exponentialRampToValueAtTime(.0001,t+d);o.start(t);o.stop(t+d+.05); }
 
-/* ── HUD 그리기 ─────────────────────────────────── */
 function fmt(s){ s=Math.max(0,Math.ceil(s)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
-function drawHUD(){
-  const W=900,H=300; hctx.clearRect(0,0,W,H);
+function roundRect(x,y,w,h,r){ hctx.beginPath();hctx.moveTo(x+r,y);hctx.arcTo(x+w,y,x+w,y+h,r);hctx.arcTo(x+w,y+h,x,y+h,r);hctx.arcTo(x,y+h,x,y,r);hctx.arcTo(x,y,x+w,y,r);hctx.closePath(); }
+function drawHUD(k){
+  const W=900,H=300, sc=SCENES[params.sceneId]; hctx.clearRect(0,0,W,H);
   hctx.fillStyle='rgba(14,20,24,.55)'; roundRect(0,0,W,H,28); hctx.fill();
   const remain=params.duration - tElapsed;
-  const intensity=Math.round(params.speed*ramp*100);
   hctx.textAlign='left';
-  // 남은 시간
-  hctx.fillStyle='#e8eef1'; hctx.font='700 64px ui-monospace,monospace';
-  hctx.fillText(state==='done'?'완료':fmt(remain), 46, 120);
-  hctx.fillStyle='#8ea3ad'; hctx.font='600 22px sans-serif';
-  hctx.fillText(params.scene==='aisle'?'마트 통로':'옵토키네틱', 48, 158);
-  // 강도 바
-  hctx.textAlign='right'; hctx.fillStyle='#e8a23c'; hctx.font='700 30px ui-monospace,monospace';
-  hctx.fillText('강도 '+intensity+'%', W-46, 96);
-  hctx.fillStyle='rgba(255,255,255,.14)'; roundRect(W-300,118,254,16,8); hctx.fill();
-  hctx.fillStyle='#e8a23c'; roundRect(W-300,118,254*(params.speed*ramp),16,8); hctx.fill();
-  // 안내
+  hctx.fillStyle='#e8eef1'; hctx.font='700 64px ui-monospace,monospace'; hctx.fillText(state==='done'?'완료':fmt(remain), 46, 120);
+  hctx.fillStyle='#8ea3ad'; hctx.font='600 22px sans-serif'; hctx.fillText(sc.name, 48, 158);
+  hctx.textAlign='right'; hctx.fillStyle='#e8a23c'; hctx.font='700 30px ui-monospace,monospace'; hctx.fillText(sc.metric(k), W-46, 96);
+  if(sc.useSpeed){ hctx.fillStyle='rgba(255,255,255,.14)'; roundRect(W-300,118,254,16,8); hctx.fill();
+    hctx.fillStyle='#e8a23c'; roundRect(W-300,118,254*Math.max(0,Math.min(1,k)),16,8); hctx.fill(); }
   hctx.textAlign='center';
   if(state==='paused'){ hctx.fillStyle='#3ec6b4'; hctx.font='700 40px sans-serif'; hctx.fillText('정지됨', W/2,236);
     hctx.fillStyle='#cdd8dd'; hctx.font='400 26px sans-serif'; hctx.fillText('다시 시작하려면 핀치하세요', W/2,278); }
   else if(state==='done'){ hctx.fillStyle='#cdd8dd'; hctx.font='400 28px sans-serif'; hctx.fillText('세션 종료 · 핀치로 다시 시작', W/2,250); }
+  else if(params.sceneId==='vor'){ hctx.fillStyle='#3ec6b4'; hctx.font='700 28px sans-serif';
+    hctx.fillText((opts.plane==='h'?'◀ 박자에 맞춰 고개 좌우 ▶':'▲ 박자에 맞춰 고개 상하 ▼'), W/2,250);
+    // 페이싱 카렛
+    const cx=W/2 + (SS.pace||0)*180; hctx.fillStyle='#e8a23c'; hctx.beginPath(); hctx.arc(cx,292,9,0,7); hctx.fill(); }
   else { hctx.fillStyle='#3ec6b4'; hctx.font='700 30px sans-serif'; hctx.fillText('어지러우면 핀치로 즉시 정지', W/2,250); }
   hudTex.needsUpdate=true;
 }
-function roundRect(x,y,w,h,r){ hctx.beginPath();hctx.moveTo(x+r,y);hctx.arcTo(x+w,y,x+w,y+h,r);hctx.arcTo(x+w,y+h,x,y+h,r);hctx.arcTo(x,y+h,x,y,r);hctx.arcTo(x,y,x+w,y,r);hctx.closePath(); }
 
-/* ── 렌더 루프 ──────────────────────────────────── */
 const clock=new THREE.Clock();
 let hudAcc=0;
 function render(){
   const dt=Math.min(clock.getDelta(),0.05);
-
+  const sc=SCENES[params.sceneId];
   if(state==='running'){
     tElapsed=(performance.now()-tStart)/1000;
-    if(params.ramp) ramp=Math.min(1, ramp+dt/RAMP_SECONDS); else ramp=1;
+    if(params.ramp) ramp=Math.min(1,ramp+dt/RAMP_SECONDS); else ramp=1;
     if(tElapsed>=params.duration){ state='done'; sessionCompleted=true; lastSessionCtx=snapCtx(); chime(523,.7); setTimeout(()=>chime(659,.7),120); }
-  } else {
-    ramp=Math.max(0, ramp-dt*0.6); // 정지 시 자극 페이드아웃
-  }
+  } else { ramp=Math.max(0,ramp-dt*0.6); }
 
-  // 모션 적용
-  const k=params.speed*ramp;
-  if(params.scene==='aisle'){
-    world.position.z += AISLE_MAX_SPEED*k*dt;
-    if(world.position.z>=PERIOD) world.position.z-=PERIOD;
-    if(crowdBodies && state==='running') updateCrowd(clock.elapsedTime);
-  } else {
-    const w=OKN_MAX_SPEED*k*dt;
-    if(params.dir==='h') oknGroup.rotation.y+=w;
-    else if(params.dir==='v') oknGroup.rotation.x+=w;
-    else oknGroup.rotation.z+=w;
-  }
+  const k = (sc.useSpeed?params.speed:1)*ramp;
+  if(state!=='paused') sc.update(dt,k,clock.elapsedTime);
 
-  // 정지 오버레이 페이드
   const targetDim=(state==='paused')?0.5:0;
   dim.material.opacity += (targetDim-dim.material.opacity)*Math.min(1,dt*5);
 
-  hudAcc+=dt; if(hudAcc>0.06){ drawHUD(); hudAcc=0; }
+  hudAcc+=dt; if(hudAcc>0.06){ drawHUD(k); hudAcc=0; }
   renderer.render(scene,camera);
 }
 
-/* ── UI 바인딩 ──────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════
+   동적 설정 UI
+   ════════════════════════════════════════════════════════════ */
 const $=s=>document.querySelector(s);
-function segPick(seg,cb){ seg.querySelectorAll('button').forEach(b=>b.onclick=()=>{
-  seg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); cb(b.dataset.v); }); }
-segPick($('#sceneSeg'),v=>{ params.scene=v;
-  $('#sceneHint').textContent = v==='aisle'?'선반이 빽빽한 통로를 따라 앞으로 흐르는 광학 흐름에 노출됩니다.':'전 시야를 채우는 점들이 일정 속도로 움직이는 고전적 옵토키네틱 자극입니다.'; });
-segPick($('#denSeg'),v=>{ params.density=v; $('#denVal').textContent={low:'낮음',med:'보통',high:'높음'}[v]; });
-segPick($('#oknPatSeg'),v=>{ params.oknPattern=v; $('#oknPatVal').textContent={dots:'점',drum:'줄무늬'}[v]; });
-segPick($('#dirSeg'),v=>{ params.dir=v; $('#dirVal').textContent={h:'좌우',v:'상하',r:'회전'}[v]; });
-$('#spd').oninput=e=>{ params.speed=e.target.value/100; $('#spdVal').textContent=e.target.value+'%'; };
-$('#dur').oninput=e=>{ params.duration=e.target.value*60; $('#durVal').textContent=e.target.value+'분'; };
-$('#fixSw').onclick=function(){ this.classList.toggle('on'); params.fixation=this.classList.contains('on'); };
-$('#rampSw').onclick=function(){ this.classList.toggle('on'); params.ramp=this.classList.contains('on'); };
-$('#crowdSw').onclick=function(){ this.classList.toggle('on'); params.crowd=this.classList.contains('on'); };
+function el(tag,cls,html){ const e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e; }
 
-/* ── 세션 후 어지럼 자가평가 기록 (localStorage) ──── */
+function renderScenePicker(){
+  const host=$('#scenePick'); host.innerHTML='';
+  let lastGroup=null;
+  SCENE_ORDER.forEach(id=>{
+    const sc=SCENES[id];
+    if(sc.group!==lastGroup){ host.appendChild(el('div','grouplabel',sc.group)); lastGroup=sc.group; }
+    const b=el('button',id===params.sceneId?'on':null,sc.name); b.dataset.id=id;
+    b.onclick=()=>{ params.sceneId=id; applySceneDefaults(); renderScenePicker(); renderControls(); $('#sceneHint').textContent=sc.hint;
+      if(state!=='running'&&state!=='paused'){ buildScene(); } };
+    host.appendChild(b);
+  });
+}
+function applySceneDefaults(){ opts=Object.assign({}, SCENES[params.sceneId].defaults); }
+
+function ctrlValText(c){
+  const v=opts[c.k];
+  if(c.type==='range'){ return c.fmt?c.fmt(v):(v+(c.unit||'')); }
+  if(c.type==='seg'){ const o=c.options.find(o=>o[0]===v); return o?o[1]:v; }
+  return '';
+}
+function renderControls(){
+  const sc=SCENES[params.sceneId];
+  // 세션별
+  const host=$('#sceneOpts'); host.innerHTML='';
+  sc.controls.forEach(c=>host.appendChild(buildControl(c, ()=>opts[c.k], v=>{ opts[c.k]=v; if(state!=='running'&&state!=='paused')buildScene(); })));
+  // 공통
+  const ch=$('#commonOpts'); ch.innerHTML='';
+  if(sc.useSpeed){ ch.appendChild(buildControl({k:'speed',label:'자극 강도/속도',type:'range',min:0,max:100,step:1,unit:'%',hint:'0%에서 시작해 환자 반응을 보며 올리세요.'},
+      ()=>Math.round(params.speed*100), v=>{ params.speed=v/100; })); }
+  ch.appendChild(buildControl({k:'duration',label:'세션 길이',type:'range',min:1,max:10,step:1,unit:'분'},
+      ()=>Math.round(params.duration/60), v=>{ params.duration=v*60; }));
+  ch.appendChild(buildControl({k:'ramp',label:'점진적 시작(램프업)',type:'toggle',hint:'시작 후 강도를 서서히 끌어올립니다.'},
+      ()=>params.ramp, v=>{ params.ramp=v; }));
+  if(sc.useFixation){ ch.appendChild(buildControl({k:'fixation',label:'중앙 응시점 표시',type:'toggle',hint:'고정점을 보면 자극이 약해집니다(난이도 낮춤).'},
+      ()=>params.fixation, v=>{ params.fixation=v; if(state!=='running'&&state!=='paused')buildScene(); })); }
+}
+function buildControl(c, get, set){
+  if(c.type==='toggle'){
+    const f=el('div','field toggle'); const left=el('div'); left.appendChild(el('label',null,c.label));
+    if(c.hint) left.appendChild(el('p','hint',c.hint));
+    const sw=el('div','sw'+(get()?' on':'')); sw.onclick=()=>{ sw.classList.toggle('on'); set(sw.classList.contains('on')); };
+    f.appendChild(left); f.appendChild(sw); return f;
+  }
+  const f=el('div','field');
+  const row=el('div','row'); row.appendChild(el('label',null,c.label));
+  const val=el('span','val'+(c.type==='seg'?' teal':''), c.type==='range'?(c.fmt?c.fmt(get()):(get()+(c.unit||''))):'');
+  row.appendChild(val); f.appendChild(row);
+  if(c.type==='range'){
+    const inp=el('input'); inp.type='range'; inp.min=c.min; inp.max=c.max; inp.step=c.step||1; inp.value=get();
+    inp.oninput=e=>{ set(parseFloat(e.target.value)); val.textContent=c.fmt?c.fmt(get()):(get()+(c.unit||'')); };
+    f.appendChild(inp);
+  } else if(c.type==='seg'){
+    const seg=el('div','seg');
+    c.options.forEach(([v,label])=>{ const b=el('button',get()===v?'on':null,label);
+      b.onclick=()=>{ seg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); set(v); val.textContent=label; };
+      seg.appendChild(b); });
+    f.appendChild(seg); val.textContent=ctrlValText(c);
+  }
+  if(c.hint) f.appendChild(el('p','hint',c.hint));
+  return f;
+}
+
+/* ── 초기 UI 구성 ──────────────────────────────── */
+applySceneDefaults();
+renderScenePicker();
+renderControls();
+$('#sceneHint').textContent=SCENES[params.sceneId].hint;
+
+/* ════════════════════════════════════════════════════════════
+   세션 후 자가평가 기록 (localStorage)
+   ════════════════════════════════════════════════════════════ */
 const LOG_KEY='vrt_logs';
 function getLogs(){ try{ return JSON.parse(localStorage.getItem(LOG_KEY)||'[]'); }catch(e){ return []; } }
+function optsSummary(){ const sc=SCENES[params.sceneId]; return sc.controls.map(c=>{
+  const v=opts[c.k]; if(c.type==='toggle')return c.label+':'+(v?'Y':'N');
+  if(c.type==='seg'){ const o=c.options.find(o=>o[0]===v); return c.label+':'+(o?o[1]:v); }
+  return c.label+':'+v+(c.unit||''); }).join(' · '); }
 function snapCtx(){
-  return {
-    scene: params.scene==='aisle'?'마트통로':'옵토키네틱',
-    pattern: params.scene==='okn'?(params.oknPattern==='drum'?'줄무늬':'점'):'',
-    dir: params.scene==='okn'?({h:'좌우',v:'상하',r:'회전'}[params.dir]):'',
-    speedPct: Math.round(params.speed*100),
-    density: ({low:'낮음',med:'보통',high:'높음'}[params.density]),
-    durationMin: Math.round(params.duration/60),
-    fixation: params.fixation, ramp: params.ramp, crowd: params.crowd
-  };
+  return { scene:SCENES[params.sceneId].name, detail:optsSummary(),
+    speedPct:SCENES[params.sceneId].useSpeed?Math.round(params.speed*100):'',
+    durationMin:Math.round(params.duration/60) };
 }
 function saveLog(diz){
-  const c=lastSessionCtx||snapCtx();
-  const logs=getLogs();
+  const c=lastSessionCtx||snapCtx(), logs=getLogs();
   logs.push(Object.assign({ts:new Date().toLocaleString('ko-KR'), dizziness:diz}, c));
   while(logs.length>500) logs.shift();
   try{ localStorage.setItem(LOG_KEY,JSON.stringify(logs)); }catch(e){}
@@ -520,143 +806,93 @@ function saveLog(diz){
 function renderHistory(){
   const logs=getLogs().slice(-10).reverse(), box=$('#histList');
   if(!logs.length){ box.innerHTML='<p class="hint">아직 기록이 없습니다.</p>'; return; }
-  box.innerHTML=logs.map(l=>{
-    const tag=l.scene+(l.pattern?(' · '+l.pattern):'')+' · 속도'+l.speedPct+'%';
-    return '<div class="hrow"><span class="t">'+l.ts+'</span><span>'+tag+'</span><b>어지럼 '+l.dizziness+'</b></div>';
-  }).join('');
+  box.innerHTML=logs.map(l=>'<div class="hrow"><span class="t">'+l.ts+'</span><span>'+l.scene+(l.speedPct!==''?(' · 속도'+l.speedPct+'%'):'')+'</span><b>어지럼 '+l.dizziness+'</b></div>').join('');
 }
 function exportCSV(){
-  const logs=getLogs();
-  if(!logs.length){ alert('내보낼 기록이 없습니다.'); return; }
-  const head=['일시','장면','패턴','방향','속도%','밀도','길이(분)','응시점','램프업','군중','어지럼0-10'];
+  const logs=getLogs(); if(!logs.length){ alert('내보낼 기록이 없습니다.'); return; }
+  const head=['일시','세션','세부설정','속도%','길이(분)','어지럼0-10'];
   const esc=v=>'"'+String(v).replace(/"/g,'""')+'"';
-  const rows=logs.map(l=>[l.ts,l.scene,l.pattern||'',l.dir||'',l.speedPct,l.density,l.durationMin,
-    l.fixation?'Y':'N',l.ramp?'Y':'N',l.crowd?'Y':'N',l.dizziness].map(esc).join(','));
+  const rows=logs.map(l=>[l.ts,l.scene,l.detail||'',l.speedPct,l.durationMin,l.dizziness].map(esc).join(','));
   const csv='﻿'+[head.map(esc).join(','),...rows].join('\r\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}), url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url;
-  a.download='vrt_records_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+  const a=document.createElement('a'); a.href=url; a.download='vrt_records_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
   setTimeout(()=>URL.revokeObjectURL(url),1500);
 }
-const assess=$('#assess');
-function showAssess(withInput){
-  $('#assessInput').style.display = withInput?'block':'none';
-  $('#dizScale').querySelectorAll('button').forEach(b=>b.classList.remove('sel'));
-  renderHistory(); assess.classList.add('show');
-}
-function closeAssess(){ assess.classList.remove('show'); sessionCompleted=false; }
-(function buildScaleBtns(){
-  const box=$('#dizScale');
-  for(let n=0;n<=10;n++){ const b=document.createElement('button'); b.textContent=n;
-    b.onclick=()=>{ box.querySelectorAll('button').forEach(x=>x.classList.remove('sel')); b.classList.add('sel');
-      saveLog(n); renderHistory(); setTimeout(closeAssess,260); };
-    box.appendChild(b); }
-})();
-$('#assessSkip').onclick=closeAssess;
-$('#assessClose').onclick=closeAssess;
+const assessEl=$('#assess');
+function showAssess(withInput){ $('#assessInput').style.display=withInput?'block':'none';
+  $('#dizScale').querySelectorAll('button').forEach(b=>b.classList.remove('sel')); renderHistory(); assessEl.classList.add('show'); }
+function closeAssess(){ assessEl.classList.remove('show'); sessionCompleted=false; }
+(function(){ const box=$('#dizScale'); for(let n=0;n<=10;n++){ const b=el('button',null,n);
+  b.onclick=()=>{ box.querySelectorAll('button').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); saveLog(n); renderHistory(); setTimeout(closeAssess,260); };
+  box.appendChild(b); } })();
+$('#assessSkip').onclick=closeAssess; $('#assessClose').onclick=closeAssess;
 $('#histExport').onclick=exportCSV;
 $('#histClear').onclick=()=>{ if(confirm('모든 측정 기록을 삭제할까요?')){ try{localStorage.removeItem(LOG_KEY);}catch(e){} renderHistory(); } };
 $('#histLink').onclick=e=>{ e.preventDefault(); showAssess(false); };
 
-/* ── VR / 미리보기 ──────────────────────────────── */
+/* ════════════════════════════════════════════════════════════
+   VR / 미리보기 (검증된 패턴)
+   ════════════════════════════════════════════════════════════ */
 const overlay=$('#overlay'), enterBtn=$('#enterVR'), prevBtn=$('#preview'),
       xrnote=$('#xrnote'), exitBtn=$('#exit'), pvhint=$('#pvhint');
-
-const embedded = (window.self!==window.top);
+const embedded=(window.self!==window.top);
 async function showDiag(){
-  let vr=false, ar=false;
-  if(navigator.xr){
-    try{ vr=await navigator.xr.isSessionSupported('immersive-vr'); }catch(e){}
-    try{ ar=await navigator.xr.isSessionSupported('immersive-ar'); }catch(e){}
-  }
-  const lines=[
-    '프로토콜:'+location.protocol,
-    'WebXR:'+(navigator.xr?'있음':'없음'),
-    '보안컨텍스트:'+(window.isSecureContext?'예':'아니오'),
-    '임베드창:'+(embedded?'예(차단 위험)':'아니오'),
-    'immersive-vr:'+(vr?'지원':'미지원'),
-    'immersive-ar:'+(ar?'지원':'미지원')
-  ];
-  if(navigator.xr && (vr||ar)) enterBtn.disabled=false;
-  if(embedded){
-    xrnote.innerHTML='<b style="color:#e86b6b">이 페이지가 임베드된 창에서 실행 중입니다.</b> WebXR이 차단됩니다. 오른쪽 위 메뉴로 <b>새 탭에서 열기</b>를 하거나, 이 HTML을 내려받아 <b>갤럭시 XR의 Chrome에서 직접 URL로</b> 여세요.<br><span style="opacity:.7">'+lines.join(' · ')+'</span>';
-  } else if(navigator.xr && (vr||ar)){
-    xrnote.innerHTML='헤드셋에서 [VR로 시작]을 누르고, 권한 요청(3D 매핑·카메라 추적)이 뜨면 <b>허용</b>하세요.<br><span style="opacity:.7">'+lines.join(' · ')+'</span>';
-  } else {
-    xrnote.innerHTML='몰입형 XR을 시작할 수 없습니다. [화면 미리보기]로 확인하세요.<br><span style="opacity:.7">'+lines.join(' · ')+'</span>';
-  }
+  let vr=false,ar=false;
+  if(navigator.xr){ try{vr=await navigator.xr.isSessionSupported('immersive-vr');}catch(e){} try{ar=await navigator.xr.isSessionSupported('immersive-ar');}catch(e){} }
+  const lines=['프로토콜:'+location.protocol,'WebXR:'+(navigator.xr?'있음':'없음'),'보안컨텍스트:'+(window.isSecureContext?'예':'아니오'),
+    '임베드창:'+(embedded?'예(차단 위험)':'아니오'),'immersive-vr:'+(vr?'지원':'미지원'),'immersive-ar:'+(ar?'지원':'미지원')];
+  if(navigator.xr&&(vr||ar)) enterBtn.disabled=false;
+  if(embedded){ xrnote.innerHTML='<b style="color:#e86b6b">이 페이지가 임베드된 창에서 실행 중입니다.</b> WebXR이 차단됩니다. 오른쪽 위 메뉴로 <b>새 탭에서 열기</b>를 하거나, 갤럭시 XR의 Chrome에서 <b>직접 URL로</b> 여세요.<br><span style="opacity:.7">'+lines.join(' · ')+'</span>'; }
+  else if(navigator.xr&&(vr||ar)){ xrnote.innerHTML='헤드셋에서 [VR로 시작]을 누르고, 권한 요청(3D 매핑·카메라 추적)이 뜨면 <b>허용</b>하세요.<br><span style="opacity:.7">'+lines.join(' · ')+'</span>'; }
+  else { xrnote.innerHTML='몰입형 XR을 시작할 수 없습니다. [화면 미리보기]로 확인하세요.<br><span style="opacity:.7">'+lines.join(' · ')+'</span>'; }
 }
 showDiag();
 
-let xrSession=null;
-// 갤럭시 XR 호환: 옵션 없이 immersive-vr부터 시도하고, 안 되면 단계적으로 폴백
-let attemptLog=[];
+let xrSession=null, attemptLog=[];
 async function requestXRSession(){
   attemptLog=[];
-  const attempts=[
-    ['immersive-vr', undefined],
-    ['immersive-vr', {optionalFeatures:['hand-tracking']}],
-    ['immersive-ar', undefined],
-    ['immersive-ar', {optionalFeatures:['hand-tracking']}]
-  ];
+  const attempts=[['immersive-vr',undefined],['immersive-vr',{optionalFeatures:['hand-tracking']}],['immersive-ar',undefined],['immersive-ar',{optionalFeatures:['hand-tracking']}]];
   let lastErr;
   for(const [mode,init] of attempts){
-    try{
-      if(navigator.xr.isSessionSupported){ const ok=await navigator.xr.isSessionSupported(mode); if(!ok){ attemptLog.push(mode+':미지원'); continue; } }
-      const s=await navigator.xr.requestSession(mode, init);
-      attemptLog.push(mode+':성공');
-      return s;
-    }catch(e){ attemptLog.push(mode+':'+((e&&e.name)||'실패')); lastErr=e; }
-  }
+    try{ if(navigator.xr.isSessionSupported){ const ok=await navigator.xr.isSessionSupported(mode); if(!ok){ attemptLog.push(mode+':미지원'); continue; } }
+      const s=await navigator.xr.requestSession(mode,init); attemptLog.push(mode+':성공'); return s;
+    }catch(e){ attemptLog.push(mode+':'+((e&&e.name)||'실패')); lastErr=e; } }
   throw lastErr||new Error('지원되는 XR 세션이 없습니다');
 }
 enterBtn.onclick=async()=>{
   initAudio();
   try{
     xrSession=await requestXRSession();
-    try{ renderer.xr.setReferenceSpaceType('local'); }catch(e){}  // 좌식 기준, 가장 호환성 높음
+    try{ renderer.xr.setReferenceSpaceType('local'); }catch(e){}
     await renderer.xr.setSession(xrSession);
-    overlay.classList.add('hidden');
-    startSession();
-    renderer.setAnimationLoop(render);
+    overlay.classList.add('hidden'); startSession(); renderer.setAnimationLoop(render);
     xrSession.addEventListener('select',togglePause);
     xrSession.addEventListener('end',()=>{ xrSession=null; renderer.setAnimationLoop(null);
-      overlay.classList.remove('hidden'); const done=sessionCompleted; state='idle'; requestAnimationFrame(loop);
-      if(done) showAssess(true); });
+      overlay.classList.remove('hidden'); const done=sessionCompleted; state='idle'; requestAnimationFrame(loop); if(done)showAssess(true); });
   }catch(e){
     const msg=(e&&e.message)?e.message:String(e);
-    xrnote.innerHTML='<b style="color:#e86b6b">VR 시작 실패:</b> '+msg
-      +'<br><span style="opacity:.7">시도: '+attemptLog.join(' · ')
+    xrnote.innerHTML='<b style="color:#e86b6b">VR 시작 실패:</b> '+msg+'<br><span style="opacity:.7">시도: '+attemptLog.join(' · ')
       +'<br>프로토콜:'+location.protocol+' · 보안컨텍스트:'+(window.isSecureContext?'예':'아니오')+' · 임베드창:'+(embedded?'예':'아니오')+'</span>'
-      +'<br>'+((location.protocol==='file:'||location.protocol==='http:')
-        ? '원인은 <b>출처</b>입니다. file://·http:// 에서는 Android XR이 XR 권한을 못 줍니다. <b>https</b> 주소로 호스팅해 여세요.'
-        : (embedded
-          ? '원인은 <b>임베드된 창</b>일 가능성이 큽니다. 새 탭/직접 URL로 여세요.'
-          : '권한 요청이 떴는지 확인해 주세요. 안 떴다면 헤드셋 Chrome의 사이트 권한을 확인하세요.'));
+      +'<br>'+((location.protocol==='file:'||location.protocol==='http:')?'원인은 <b>출처</b>입니다. https로 호스팅해 여세요.'
+        :(embedded?'원인은 <b>임베드된 창</b>일 가능성이 큽니다. 새 탭/직접 URL로 여세요.':'권한 요청이 떴는지 확인해 주세요.'));
   }
 };
 
 let previewing=false;
-prevBtn.onclick=()=>{ initAudio(); overlay.classList.add('hidden'); exitBtn.style.display='block'; pvhint.style.display='block';
-  previewing=true; camYaw=0;camPitch=0; startSession(); };
-exitBtn.onclick=()=>{ const done=sessionCompleted; previewing=false; state='idle'; exitBtn.style.display='none'; pvhint.style.display='none'; overlay.classList.remove('hidden'); if(done) showAssess(true); };
+prevBtn.onclick=()=>{ initAudio(); overlay.classList.add('hidden'); exitBtn.style.display='block'; pvhint.style.display='block'; previewing=true; camYaw=0;camPitch=0; startSession(); };
+exitBtn.onclick=()=>{ const done=sessionCompleted; previewing=false; state='idle'; exitBtn.style.display='none'; pvhint.style.display='none'; overlay.classList.remove('hidden'); if(done)showAssess(true); };
 
-/* 미리보기 둘러보기 + 클릭 정지/재개 */
 let camYaw=0,camPitch=0,drag=false,lx=0,ly=0,moved=false;
 renderer.domElement.addEventListener('pointerdown',e=>{drag=true;moved=false;lx=e.clientX;ly=e.clientY;});
 addEventListener('pointermove',e=>{ if(!drag)return; const dx=e.clientX-lx,dy=e.clientY-ly;lx=e.clientX;ly=e.clientY;
   if(Math.abs(dx)+Math.abs(dy)>3)moved=true; camYaw-=dx*0.005; camPitch=Math.max(-1.1,Math.min(1.1,camPitch-dy*0.005)); });
 addEventListener('pointerup',()=>{ if(drag&&!moved&&previewing)togglePause(); drag=false; });
 
-function loop(){ if(renderer.xr.isPresenting)return;
-  if(!renderer.xr.isPresenting){ camera.rotation.y=camYaw; camera.rotation.x=camPitch; }
-  render(); requestAnimationFrame(loop); }
+function loop(){ if(renderer.xr.isPresenting)return; camera.rotation.y=camYaw; camera.rotation.x=camPitch; render(); requestAnimationFrame(loop); }
 requestAnimationFrame(loop);
-
 addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
 
-// 초기 미리보기용 장면 한 번 구성(정지 상태)
-buildScene();
+buildScene();   // 초기 미리보기용
 </script>
 </body>
 </html>
