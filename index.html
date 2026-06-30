@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>전정재활 · 시각 자극 훈련</title>
+<style>
+  :root{
+    --bg:#0e1418;
+    --panel:#161e24;
+    --line:#27333b;
+    --ink:#e8eef1;
+    --muted:#8ea3ad;
+    --amber:#e8a23c;     /* 강도(자극) */
+    --teal:#3ec6b4;      /* 정지·안전 */
+    --warn:#e86b6b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:#05080a;font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif}
+  #app{position:fixed;inset:0}
+  canvas{display:block}
+
+  #overlay{position:fixed;inset:0;overflow-y:auto;background:
+    radial-gradient(100% 60% at 50% 0%, #15222a, #0e1418 60%);
+    color:var(--ink);transition:opacity .5s ease}
+  #overlay.hidden{opacity:0;pointer-events:none}
+  .wrap{max-width:560px;margin:0 auto;padding:30px 22px 46px}
+  .eyebrow{font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--teal);font-weight:700;margin-bottom:10px}
+  h1{font-size:clamp(24px,6vw,34px);font-weight:700;letter-spacing:-.01em;line-height:1.2;margin-bottom:8px}
+  .lede{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:20px}
+
+  .safety{display:flex;gap:12px;background:rgba(232,107,107,.08);border:1px solid rgba(232,107,107,.3);
+    border-radius:14px;padding:14px 16px;margin-bottom:24px}
+  .safety b{color:#f1a0a0}
+  .safety .s-ico{color:var(--warn);font-size:20px;line-height:1.2}
+  .safety p{font-size:12.5px;color:#d7c2c2;line-height:1.6}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px}
+  .panel h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:16px}
+  .field{margin-bottom:18px}
+  .field:last-child{margin-bottom:0}
+  .field .row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .field label{font-size:14px;font-weight:600}
+  .field .val{font-family:"SF Mono",ui-monospace,monospace;font-size:14px;color:var(--amber)}
+  .field .val.teal{color:var(--teal)}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.5}
+
+  input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:6px;background:#26323a;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;
+    background:var(--amber);cursor:pointer;border:3px solid #0e1418;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+  .seg{display:flex;gap:8px}
+  .seg button{flex:1;font:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;
+    background:#1d272e;border:1px solid var(--line);border-radius:10px;padding:11px 8px;transition:.15s}
+  .seg button.on{background:rgba(62,198,180,.14);border-color:var(--teal);color:var(--teal)}
+  .toggle{display:flex;align-items:center;justify-content:space-between}
+  .toggle .sw{width:46px;height:27px;border-radius:99px;background:#26323a;position:relative;cursor:pointer;transition:.2s;flex:none}
+  .toggle .sw.on{background:var(--teal)}
+  .toggle .sw::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:.2s}
+  .toggle .sw.on::after{transform:translateX(19px)}
+
+  .start{display:flex;gap:10px;margin-top:22px}
+  button.cta{flex:1;font:inherit;font-size:15px;font-weight:700;color:#06120f;cursor:pointer;border:none;border-radius:12px;
+    padding:16px;background:var(--teal);transition:.15s}
+  button.cta:hover{filter:brightness(1.08)}
+  button.cta:disabled{opacity:.4;cursor:default}
+  button.ghost{flex:1;font:inherit;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;
+    border:1px solid var(--line);border-radius:12px;padding:16px;background:transparent}
+  #xrnote{font-size:11.5px;color:var(--muted);margin-top:14px;text-align:center;line-height:1.5}
+
+  #exit{position:fixed;top:14px;right:14px;z-index:5;display:none;font:inherit;font-size:13px;color:var(--ink);
+    cursor:pointer;border:1px solid var(--line);border-radius:99px;padding:9px 16px;background:rgba(14,20,24,.6);backdrop-filter:blur(8px)}
+  #pvhint{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:5;display:none;font-size:12px;
+    color:var(--muted);background:rgba(14,20,24,.6);padding:8px 14px;border-radius:99px;backdrop-filter:blur(8px)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<button id="exit">종료</button>
+<div id="pvhint">드래그=둘러보기 · 클릭=정지/재개</div>
+
+<div id="overlay"><div class="wrap">
+  <div class="eyebrow">전정재활 · 시각 자극 노출</div>
+  <h1>시각성 어지럼 습관화 훈련</h1>
+  <p class="lede">복잡한 시각 환경과 광학 흐름에 통제된 강도로 노출해 시각 의존을 줄이는 도구입니다. 강도는 낮게 시작해 단계적으로 올리세요.</p>
+
+  <div class="safety">
+    <div class="s-ico">⚠︎</div>
+    <p><b>안전</b> · 이 훈련은 의도적으로 어지럼을 유발합니다. <b>앉은 자세</b>를 기본으로 하고, 보조자가 곁에 있을 것을 권장합니다. 어지러우면 <b>핀치(선택)</b>로 즉시 정지하세요. 급성 전정신경염·낙상 고위험군은 주의가 필요합니다. 진단·치료를 대체하지 않습니다.</p>
+  </div>
+
+  <div class="panel">
+    <h2>장면</h2>
+    <div class="seg" id="sceneSeg">
+      <button data-v="aisle" class="on">마트 통로</button>
+      <button data-v="okn">옵토키네틱 필드</button>
+    </div>
+    <p class="hint" id="sceneHint">선반이 빽빽한 통로를 따라 앞으로 흐르는 광학 흐름에 노출됩니다.</p>
+  </div>
+
+  <div class="panel">
+    <h2>강도 설정</h2>
+    <div class="field">
+      <div class="row"><label>자극 속도</label><span class="val" id="spdVal">40%</span></div>
+      <input type="range" id="spd" min="0" max="100" value="40" />
+      <p class="hint">통로 전진 속도 / 필드 회전 속도. 0%에서 시작해 환자 반응을 보며 올리세요.</p>
+    </div>
+    <div class="field">
+      <div class="row"><label>시각 밀도</label><span class="val teal" id="denVal">보통</span></div>
+      <div class="seg" id="denSeg">
+        <button data-v="low">낮음</button><button data-v="med" class="on">보통</button><button data-v="high">높음</button>
+      </div>
+      <p class="hint">화면을 채우는 시각 복잡도. 높을수록 자극이 강합니다.</p>
+    </div>
+    <div class="field">
+      <div class="row"><label>이동 방향</label><span class="val teal" id="dirVal">좌우</span></div>
+      <div class="seg" id="dirSeg">
+        <button data-v="h" class="on">좌우</button><button data-v="v">상하</button><button data-v="r">회전</button>
+      </div>
+      <p class="hint">옵토키네틱 필드에만 적용됩니다.</p>
+    </div>
+    <div class="field">
+      <div class="row"><label>세션 길이</label><span class="val" id="durVal">3분</span></div>
+      <input type="range" id="dur" min="1" max="10" value="3" />
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>옵션</h2>
+    <div class="field toggle"><div><label>중앙 응시점 표시</label><p class="hint" style="margin-top:4px">고정점을 보면 자극이 약해집니다(난이도 낮춤).</p></div><div class="sw" id="fixSw"></div></div>
+    <div class="field toggle" style="margin-bottom:0"><div><label>점진적 시작(램프업)</label><p class="hint" style="margin-top:4px">시작 후 강도를 서서히 끌어올립니다.</p></div><div class="sw on" id="rampSw"></div></div>
+  </div>
+
+  <div class="start">
+    <button id="enterVR" class="cta" disabled>VR로 시작</button>
+    <button id="preview" class="ghost">화면 미리보기</button>
+  </div>
+  <p id="xrnote">VR 지원 여부 확인 중…</p>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ── 파라미터 (UI에서 읽음) ─────────────────────── */
+const params = { scene:'aisle', speed:0.4, density:'med', dir:'h', duration:180, fixation:false, ramp:true };
+const RAMP_SECONDS = 6;
+const AISLE_MAX_SPEED = 2.6;   // m/s
+const OKN_MAX_SPEED   = 0.9;   // rad/s
+const PERIOD = 6.0;            // 통로 반복 주기(m) — 끊김 없는 루프
+
+/* ── 렌더러/씬 ──────────────────────────────────── */
+const app=document.getElementById('app');
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.xr.enabled=true;
+app.appendChild(renderer.domElement);
+
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,0.1,200);
+camera.position.set(0,1.5,0);
+camera.rotation.order='YXZ';
+scene.add(camera);
+
+const hemi=new THREE.HemisphereLight(0xffffff,0x404a52,0.9); scene.add(hemi);
+const dir=new THREE.DirectionalLight(0xffffff,0.7); dir.position.set(3,6,2); scene.add(dir);
+
+let world=new THREE.Group(); scene.add(world);   // 통로(이동) 컨테이너
+let oknGroup=new THREE.Group(); scene.add(oknGroup); // 옵토키네틱(회전) 컨테이너
+
+/* ── HUD / 정지오버레이 / 응시점 (카메라 자식) ───── */
+const hudCanvas=document.createElement('canvas'); hudCanvas.width=900; hudCanvas.height=300;
+const hctx=hudCanvas.getContext('2d');
+const hudTex=new THREE.CanvasTexture(hudCanvas); hudTex.anisotropy=4;
+const hud=new THREE.Mesh(new THREE.PlaneGeometry(1.1,0.366),
+  new THREE.MeshBasicMaterial({map:hudTex,transparent:true,depthTest:false}));
+hud.position.set(0,-0.42,-1.5); hud.renderOrder=999; camera.add(hud);
+
+const dim=new THREE.Mesh(new THREE.PlaneGeometry(6,6),
+  new THREE.MeshBasicMaterial({color:0x070c0f,transparent:true,opacity:0,depthTest:false}));
+dim.position.set(0,0,-0.7); dim.renderOrder=998; camera.add(dim);
+
+const fixMat=new THREE.MeshBasicMaterial({color:0x3ec6b4,transparent:true,depthTest:false});
+const fix=new THREE.Group();
+const fa=new THREE.Mesh(new THREE.PlaneGeometry(0.06,0.012),fixMat);
+const fb=new THREE.Mesh(new THREE.PlaneGeometry(0.012,0.06),fixMat);
+fix.add(fa,fb); fix.position.set(0,0,-1.3); fix.renderOrder=1000; fix.visible=false; camera.add(fix);
+
+/* ── 장면 빌드 ──────────────────────────────────── */
+function clearGroup(g){ while(g.children.length){ const c=g.children.pop(); if(c.geometry)c.geometry.dispose(); } }
+
+function buildAisle(density){
+  clearGroup(world);
+  const LEN=60, half=2.2;
+  // 바닥/천장/뒷판
+  const floorMat=new THREE.MeshStandardMaterial({color:0x9aa0a6,roughness:1});
+  const floor=new THREE.Mesh(new THREE.BoxGeometry(half*2,0.05,LEN),floorMat);
+  floor.position.set(0,0,-LEN/2); world.add(floor);
+  const ceilMat=new THREE.MeshStandardMaterial({color:0xdfe4e8,roughness:1});
+  const ceil=new THREE.Mesh(new THREE.BoxGeometry(half*2,0.05,LEN),ceilMat); ceil.position.set(0,2.5,-LEN/2); world.add(ceil);
+  const backMat=new THREE.MeshStandardMaterial({color:0xeef1f3,roughness:1});
+  [-1,1].forEach(s=>{ const b=new THREE.Mesh(new THREE.BoxGeometry(0.1,2.5,LEN),backMat); b.position.set(s*half,1.25,-LEN/2); world.add(b); });
+  // 선반 슬랩
+  const shelfMat=new THREE.MeshStandardMaterial({color:0xc7ccd1,roughness:1});
+  const heights=[0.5,1.0,1.5,2.0];
+  [-1,1].forEach(s=>heights.forEach(h=>{ const sh=new THREE.Mesh(new THREE.BoxGeometry(0.42,0.04,LEN),shelfMat); sh.position.set(s*(half-0.24),h,-LEN/2); world.add(sh); }));
+
+  // 상품(인스턴스) — 주기적 배치로 끊김 없음
+  const palette=[0xe6542f,0xf2a541,0xf6d24b,0x6fb84a,0x2f9e8f,0x3a78c2,0x8a5bbf,0xd94f8a,0xe8e2d6,0xb0453a];
+  const step=0.4, stepsPerPeriod=Math.round(PERIOD/step); // 15
+  const skip = density==='low'?3 : density==='high'?1 : 2;
+  const inst=[];
+  const totalSteps=Math.floor(LEN/step);
+  for(let zi=0; zi<totalSteps; zi++){
+    if(((zi%stepsPerPeriod)%skip)!==0) continue;
+    const z=-1.0 - zi*step;
+    [-1,1].forEach(side=>{
+      heights.forEach((h,hi)=>{
+        const seed=((zi%stepsPerPeriod)*53 + hi*17 + (side>0?7:0))%palette.length;
+        const w=0.16+ (seed%3)*0.05, ht=0.18+(seed%4)*0.05;
+        inst.push({x:side*(half-0.30), y:h+0.04+ht/2, z, w, h:ht, color:palette[seed]});
+      });
+    });
+  }
+  const geo=new THREE.BoxGeometry(1,1,1);
+  const mat=new THREE.MeshStandardMaterial({roughness:.75});
+  const im=new THREE.InstancedMesh(geo,mat,inst.length);
+  const dummy=new THREE.Object3D(); const col=new THREE.Color();
+  inst.forEach((it,i)=>{
+    dummy.position.set(it.x,it.y,it.z); dummy.scale.set(it.w,it.h,it.w); dummy.updateMatrix();
+    im.setMatrixAt(i,dummy.matrix); im.setColorAt(i,col.setHex(it.color));
+  });
+  im.instanceMatrix.needsUpdate=true; if(im.instanceColor)im.instanceColor.needsUpdate=true;
+  world.add(im);
+  world.position.set(0,0,0);
+  scene.background=new THREE.Color(0xc9d2d8);
+  scene.fog=new THREE.FogExp2(0xc9d2d8,0.045);
+  hemi.intensity=0.95; dir.intensity=0.7;
+}
+
+function buildOKN(density){
+  clearGroup(oknGroup);
+  const n = density==='low'?500 : density==='high'?1800 : 1000;
+  const R=14, pos=new Float32Array(n*3);
+  for(let i=0;i<n;i++){
+    const u=Math.random()*2-1, t=Math.random()*Math.PI*2, r=Math.sqrt(1-u*u);
+    pos[i*3]=R*r*Math.cos(t); pos[i*3+1]=R*u; pos[i*3+2]=R*r*Math.sin(t);
+  }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  const m=new THREE.PointsMaterial({color:0x223038,size:0.32});
+  oknGroup.add(new THREE.Points(g,m));
+  oknGroup.rotation.set(0,0,0);
+  scene.background=new THREE.Color(0x9fb0b8);
+  scene.fog=null;
+  hemi.intensity=1.0; dir.intensity=0.3;
+}
+
+function buildScene(){
+  clearGroup(world); clearGroup(oknGroup);
+  if(params.scene==='aisle'){ buildAisle(params.density); }
+  else { buildOKN(params.density); }
+  fix.visible=params.fixation;
+}
+
+/* ── 상태머신 ───────────────────────────────────── */
+let state='idle';      // idle|running|paused|done
+let tStart=0, tElapsed=0, ramp=0;
+function startSession(){ buildScene(); state='running'; tStart=performance.now(); tElapsed=0; ramp=params.ramp?0:1; chime(440,.4); }
+function togglePause(){
+  if(state==='running'){ state='paused'; chime(330,.4); }
+  else if(state==='paused'){ state='running'; tStart=performance.now()-tElapsed*1000; chime(440,.4); }
+  else if(state==='done'){ startSession(); }
+}
+
+/* ── 오디오 ─────────────────────────────────────── */
+let actx=null;
+function initAudio(){ if(!actx){ try{actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){} } }
+function chime(f,d){ if(!actx)return; const o=actx.createOscillator(),g=actx.createGain();
+  o.type='sine';o.frequency.value=f;o.connect(g);g.connect(actx.destination);
+  const t=actx.currentTime;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.15,t+.05);
+  g.gain.exponentialRampToValueAtTime(.0001,t+d);o.start(t);o.stop(t+d+.05); }
+
+/* ── HUD 그리기 ─────────────────────────────────── */
+function fmt(s){ s=Math.max(0,Math.ceil(s)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+function drawHUD(){
+  const W=900,H=300; hctx.clearRect(0,0,W,H);
+  hctx.fillStyle='rgba(14,20,24,.55)'; roundRect(0,0,W,H,28); hctx.fill();
+  const remain=params.duration - tElapsed;
+  const intensity=Math.round(params.speed*ramp*100);
+  hctx.textAlign='left';
+  // 남은 시간
+  hctx.fillStyle='#e8eef1'; hctx.font='700 64px ui-monospace,monospace';
+  hctx.fillText(state==='done'?'완료':fmt(remain), 46, 120);
+  hctx.fillStyle='#8ea3ad'; hctx.font='600 22px sans-serif';
+  hctx.fillText(params.scene==='aisle'?'마트 통로':'옵토키네틱', 48, 158);
+  // 강도 바
+  hctx.textAlign='right'; hctx.fillStyle='#e8a23c'; hctx.font='700 30px ui-monospace,monospace';
+  hctx.fillText('강도 '+intensity+'%', W-46, 96);
+  hctx.fillStyle='rgba(255,255,255,.14)'; roundRect(W-300,118,254,16,8); hctx.fill();
+  hctx.fillStyle='#e8a23c'; roundRect(W-300,118,254*(params.speed*ramp),16,8); hctx.fill();
+  // 안내
+  hctx.textAlign='center';
+  if(state==='paused'){ hctx.fillStyle='#3ec6b4'; hctx.font='700 40px sans-serif'; hctx.fillText('정지됨', W/2,236);
+    hctx.fillStyle='#cdd8dd'; hctx.font='400 26px sans-serif'; hctx.fillText('다시 시작하려면 핀치하세요', W/2,278); }
+  else if(state==='done'){ hctx.fillStyle='#cdd8dd'; hctx.font='400 28px sans-serif'; hctx.fillText('세션 종료 · 핀치로 다시 시작', W/2,250); }
+  else { hctx.fillStyle='#3ec6b4'; hctx.font='700 30px sans-serif'; hctx.fillText('어지러우면 핀치로 즉시 정지', W/2,250); }
+  hudTex.needsUpdate=true;
+}
+function roundRect(x,y,w,h,r){ hctx.beginPath();hctx.moveTo(x+r,y);hctx.arcTo(x+w,y,x+w,y+h,r);hctx.arcTo(x+w,y+h,x,y+h,r);hctx.arcTo(x,y+h,x,y,r);hctx.arcTo(x,y,x+w,y,r);hctx.closePath(); }
+
+/* ── 렌더 루프 ──────────────────────────────────── */
+const clock=new THREE.Clock();
+let hudAcc=0;
+function render(){
+  const dt=Math.min(clock.getDelta(),0.05);
+
+  if(state==='running'){
+    tElapsed=(performance.now()-tStart)/1000;
+    if(params.ramp) ramp=Math.min(1, ramp+dt/RAMP_SECONDS); else ramp=1;
+    if(tElapsed>=params.duration){ state='done'; chime(523,.7); setTimeout(()=>chime(659,.7),120); }
+  } else {
+    ramp=Math.max(0, ramp-dt*0.6); // 정지 시 자극 페이드아웃
+  }
+
+  // 모션 적용
+  const k=params.speed*ramp;
+  if(params.scene==='aisle'){
+    world.position.z += AISLE_MAX_SPEED*k*dt;
+    if(world.position.z>=PERIOD) world.position.z-=PERIOD;
+  } else {
+    const w=OKN_MAX_SPEED*k*dt;
+    if(params.dir==='h') oknGroup.rotation.y+=w;
+    else if(params.dir==='v') oknGroup.rotation.x+=w;
+    else oknGroup.rotation.z+=w;
+  }
+
+  // 정지 오버레이 페이드
+  const targetDim=(state==='paused')?0.5:0;
+  dim.material.opacity += (targetDim-dim.material.opacity)*Math.min(1,dt*5);
+
+  hudAcc+=dt; if(hudAcc>0.06){ drawHUD(); hudAcc=0; }
+  renderer.render(scene,camera);
+}
+
+/* ── UI 바인딩 ──────────────────────────────────── */
+const $=s=>document.querySelector(s);
+function segPick(seg,cb){ seg.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+  seg.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); cb(b.dataset.v); }); }
+segPick($('#sceneSeg'),v=>{ params.scene=v;
+  $('#sceneHint').textContent = v==='aisle'?'선반이 빽빽한 통로를 따라 앞으로 흐르는 광학 흐름에 노출됩니다.':'전 시야를 채우는 점들이 일정 속도로 움직이는 고전적 옵토키네틱 자극입니다.'; });
+segPick($('#denSeg'),v=>{ params.density=v; $('#denVal').textContent={low:'낮음',med:'보통',high:'높음'}[v]; });
+segPick($('#dirSeg'),v=>{ params.dir=v; $('#dirVal').textContent={h:'좌우',v:'상하',r:'회전'}[v]; });
+$('#spd').oninput=e=>{ params.speed=e.target.value/100; $('#spdVal').textContent=e.target.value+'%'; };
+$('#dur').oninput=e=>{ params.duration=e.target.value*60; $('#durVal').textContent=e.target.value+'분'; };
+$('#fixSw').onclick=function(){ this.classList.toggle('on'); params.fixation=this.classList.contains('on'); };
+$('#rampSw').onclick=function(){ this.classList.toggle('on'); params.ramp=this.classList.contains('on'); };
+
+/* ── VR / 미리보기 ──────────────────────────────── */
+const overlay=$('#overlay'), enterBtn=$('#enterVR'), prevBtn=$('#preview'),
+      xrnote=$('#xrnote'), exitBtn=$('#exit'), pvhint=$('#pvhint');
+
+const embedded = (window.self!==window.top);
+async function showDiag(){
+  let vr=false, ar=false;
+  if(navigator.xr){
+    try{ vr=await navigator.xr.isSessionSupported('immersive-vr'); }catch(e){}
+    try{ ar=await navigator.xr.isSessionSupported('immersive-ar'); }catch(e){}
+  }
+  const lines=[
+    '프로토콜:'+location.protocol,
+    'WebXR:'+(navigator.xr?'있음':'없음'),
+    '보안컨텍스트:'+(window.isSecureContext?'예':'아니오'),
+    '임베드창:'+(embedded?'예(차단 위험)':'아니오'),
+    'immersive-vr:'+(vr?'지원':'미지원'),
+    'immersive-ar:'+(ar?'지원':'미지원')
+  ];
+  if(navigator.xr && (vr||ar)) enterBtn.disabled=false;
+  if(embedded){
+    xrnote.innerHTML='<b style="color:#e86b6b">이 페이지가 임베드된 창에서 실행 중입니다.</b> WebXR이 차단됩니다. 오른쪽 위 메뉴로 <b>새 탭에서 열기</b>를 하거나, 이 HTML을 내려받아 <b>갤럭시 XR의 Chrome에서 직접 URL로</b> 여세요.<br><span style="opacity:.7">'+lines.join(' · ')+'</span>';
+  } else if(navigator.xr && (vr||ar)){
+    xrnote.innerHTML='헤드셋에서 [VR로 시작]을 누르고, 권한 요청(3D 매핑·카메라 추적)이 뜨면 <b>허용</b>하세요.<br><span style="opacity:.7">'+lines.join(' · ')+'</span>';
+  } else {
+    xrnote.innerHTML='몰입형 XR을 시작할 수 없습니다. [화면 미리보기]로 확인하세요.<br><span style="opacity:.7">'+lines.join(' · ')+'</span>';
+  }
+}
+showDiag();
+
+let xrSession=null;
+// 갤럭시 XR 호환: 옵션 없이 immersive-vr부터 시도하고, 안 되면 단계적으로 폴백
+let attemptLog=[];
+async function requestXRSession(){
+  attemptLog=[];
+  const attempts=[
+    ['immersive-vr', undefined],
+    ['immersive-vr', {optionalFeatures:['hand-tracking']}],
+    ['immersive-ar', undefined],
+    ['immersive-ar', {optionalFeatures:['hand-tracking']}]
+  ];
+  let lastErr;
+  for(const [mode,init] of attempts){
+    try{
+      if(navigator.xr.isSessionSupported){ const ok=await navigator.xr.isSessionSupported(mode); if(!ok){ attemptLog.push(mode+':미지원'); continue; } }
+      const s=await navigator.xr.requestSession(mode, init);
+      attemptLog.push(mode+':성공');
+      return s;
+    }catch(e){ attemptLog.push(mode+':'+((e&&e.name)||'실패')); lastErr=e; }
+  }
+  throw lastErr||new Error('지원되는 XR 세션이 없습니다');
+}
+enterBtn.onclick=async()=>{
+  initAudio();
+  try{
+    xrSession=await requestXRSession();
+    try{ renderer.xr.setReferenceSpaceType('local'); }catch(e){}  // 좌식 기준, 가장 호환성 높음
+    await renderer.xr.setSession(xrSession);
+    overlay.classList.add('hidden');
+    startSession();
+    renderer.setAnimationLoop(render);
+    xrSession.addEventListener('select',togglePause);
+    xrSession.addEventListener('end',()=>{ xrSession=null; renderer.setAnimationLoop(null);
+      overlay.classList.remove('hidden'); state='idle'; requestAnimationFrame(loop); });
+  }catch(e){
+    const msg=(e&&e.message)?e.message:String(e);
+    xrnote.innerHTML='<b style="color:#e86b6b">VR 시작 실패:</b> '+msg
+      +'<br><span style="opacity:.7">시도: '+attemptLog.join(' · ')
+      +'<br>프로토콜:'+location.protocol+' · 보안컨텍스트:'+(window.isSecureContext?'예':'아니오')+' · 임베드창:'+(embedded?'예':'아니오')+'</span>'
+      +'<br>'+((location.protocol==='file:'||location.protocol==='http:')
+        ? '원인은 <b>출처</b>입니다. file://·http:// 에서는 Android XR이 XR 권한을 못 줍니다. <b>https</b> 주소로 호스팅해 여세요.'
+        : (embedded
+          ? '원인은 <b>임베드된 창</b>일 가능성이 큽니다. 새 탭/직접 URL로 여세요.'
+          : '권한 요청이 떴는지 확인해 주세요. 안 떴다면 헤드셋 Chrome의 사이트 권한을 확인하세요.'));
+  }
+};
+
+let previewing=false;
+prevBtn.onclick=()=>{ initAudio(); overlay.classList.add('hidden'); exitBtn.style.display='block'; pvhint.style.display='block';
+  previewing=true; camYaw=0;camPitch=0; startSession(); };
+exitBtn.onclick=()=>{ previewing=false; state='idle'; exitBtn.style.display='none'; pvhint.style.display='none'; overlay.classList.remove('hidden'); };
+
+/* 미리보기 둘러보기 + 클릭 정지/재개 */
+let camYaw=0,camPitch=0,drag=false,lx=0,ly=0,moved=false;
+renderer.domElement.addEventListener('pointerdown',e=>{drag=true;moved=false;lx=e.clientX;ly=e.clientY;});
+addEventListener('pointermove',e=>{ if(!drag)return; const dx=e.clientX-lx,dy=e.clientY-ly;lx=e.clientX;ly=e.clientY;
+  if(Math.abs(dx)+Math.abs(dy)>3)moved=true; camYaw-=dx*0.005; camPitch=Math.max(-1.1,Math.min(1.1,camPitch-dy*0.005)); });
+addEventListener('pointerup',()=>{ if(drag&&!moved&&previewing)togglePause(); drag=false; });
+
+function loop(){ if(renderer.xr.isPresenting)return;
+  if(!renderer.xr.isPresenting){ camera.rotation.y=camYaw; camera.rotation.x=camPitch; }
+  render(); requestAnimationFrame(loop); }
+requestAnimationFrame(loop);
+
+addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
+
+// 초기 미리보기용 장면 한 번 구성(정지 상태)
+buildScene();
+</script>
+</body>
+</html>
