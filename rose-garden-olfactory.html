@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>후각 재훈련 · 장미 정원</title>
+<style>
+  :root{
+    --bg:#140d10;
+    --panel:#241a1d;
+    --line:#3a2b30;
+    --ink:#f3e8ea;
+    --muted:#b89aa1;
+    --rose:#e0728a;      /* 주요·시작 */
+    --gold:#e8a23c;      /* 흡입 단계 */
+    --teal:#7fcbbd;      /* 휴식 단계 */
+    --warn:#e86b6b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:#0a0608;font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif}
+  #app{position:fixed;inset:0}
+  canvas{display:block}
+
+  #overlay{position:fixed;inset:0;overflow-y:auto;background:
+    radial-gradient(110% 70% at 50% 0%, #3a2630, #140d10 62%);
+    color:var(--ink);transition:opacity .5s ease}
+  #overlay.hidden{opacity:0;pointer-events:none}
+  .wrap{max-width:560px;margin:0 auto;padding:30px 22px 46px}
+  .eyebrow{font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--rose);font-weight:700;margin-bottom:10px}
+  h1{font-size:clamp(24px,6vw,34px);font-weight:700;letter-spacing:-.01em;line-height:1.2;margin-bottom:8px}
+  .lede{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:20px}
+
+  .kit{display:flex;gap:12px;background:rgba(224,114,138,.08);border:1px solid rgba(224,114,138,.3);
+    border-radius:14px;padding:14px 16px;margin-bottom:24px}
+  .kit .s-ico{color:var(--rose);font-size:20px;line-height:1.2}
+  .kit b{color:#f2adbc}
+  .kit p{font-size:12.5px;color:#e3c9cf;line-height:1.6}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px}
+  .panel h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:16px}
+  .field{margin-bottom:18px}
+  .field:last-child{margin-bottom:0}
+  .field .row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .field label{font-size:14px;font-weight:600}
+  .field .val{font-family:"SF Mono",ui-monospace,monospace;font-size:14px;color:var(--gold)}
+  .field .val.rose{color:var(--rose)}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.5}
+
+  input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:6px;background:#3a2b30;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;
+    background:var(--gold);cursor:pointer;border:3px solid #140d10;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+
+  .start{display:flex;gap:10px;margin-top:22px}
+  button.cta{flex:1;font:inherit;font-size:15px;font-weight:700;color:#1c0d12;cursor:pointer;border:none;border-radius:12px;
+    padding:16px;background:var(--rose);transition:.15s}
+  button.cta:hover{filter:brightness(1.08)}
+  button.cta:disabled{opacity:.4;cursor:default}
+  button.ghost{flex:1;font:inherit;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;
+    border:1px solid var(--line);border-radius:12px;padding:16px;background:transparent}
+  #xrnote{font-size:11.5px;color:var(--muted);margin-top:14px;text-align:center;line-height:1.5}
+
+  #exit{position:fixed;top:14px;right:14px;z-index:5;display:none;font:inherit;font-size:13px;color:var(--ink);
+    cursor:pointer;border:1px solid var(--line);border-radius:99px;padding:9px 16px;background:rgba(20,13,16,.6);backdrop-filter:blur(8px)}
+  #pvhint{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:5;display:none;font-size:12px;
+    color:var(--muted);background:rgba(20,13,16,.6);padding:8px 14px;border-radius:99px;backdrop-filter:blur(8px)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<button id="exit">종료</button>
+<div id="pvhint">드래그=둘러보기 · 클릭=일시정지/재개</div>
+
+<div id="overlay"><div class="wrap">
+  <div class="eyebrow">후각 재훈련 · 장미 정원</div>
+  <h1>향 흡입 안내 훈련</h1>
+  <p class="lede">석양의 장미 정원을 보며 안내에 맞춰 향을 흡입합니다. 호흡 안내 원이 커질 때 천천히 들이마시고, 작아질 때 편안히 쉬세요. 냄새를 맡으며 장미를 떠올리는 것이 핵심입니다.</p>
+
+  <div class="kit">
+    <div class="s-ico">🌹</div>
+    <p><b>실물 향 키트 준비</b> · 이 앱은 <b>장면과 호흡·타이밍 안내</b>를 담당합니다. 실제 향은 보유하신 <b>장미 향 키트</b>를 코 가까이 대고 안내에 맞춰 직접 흡입하세요. 하루 2회, 12주 지속을 권장합니다.</p>
+  </div>
+
+  <div class="panel">
+    <h2>프로토콜</h2>
+    <div class="field">
+      <div class="row"><label>흡입 시간</label><span class="val" id="inhVal">15초</span></div>
+      <input type="range" id="inh" min="10" max="20" value="15" />
+      <p class="hint">호흡 안내 원이 커지는 동안 천천히 향을 들이마십니다.</p>
+    </div>
+    <div class="field">
+      <div class="row"><label>휴식 시간</label><span class="val teal" id="restVal">10초</span></div>
+      <input type="range" id="rest" min="5" max="15" value="10" />
+      <p class="hint">원이 작아지는 동안 편안히 숨을 내쉬고 쉽니다.</p>
+    </div>
+    <div class="field">
+      <div class="row"><label>반복 횟수</label><span class="val rose" id="cycVal">3회</span></div>
+      <input type="range" id="cyc" min="1" max="6" value="3" />
+      <p class="hint">흡입–휴식 한 묶음을 몇 번 반복할지 정합니다. 준비 6초 후 시작됩니다.</p>
+    </div>
+  </div>
+
+  <div class="start">
+    <button id="enterVR" class="cta" disabled>VR로 시작</button>
+    <button id="preview" class="ghost">화면 미리보기</button>
+  </div>
+  <p id="xrnote">VR 지원 여부 확인 중…</p>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ── 설정 (UI에서 읽음) ─────────────────────────── */
+const cfg = { inhale:15, rest:10, cycles:3 };
+const PREPARE = 6;               // 준비 단계(초)
+const lerp=(a,b,t)=>a+(b-a)*Math.max(0,Math.min(1,t));
+
+/* ── 렌더러/씬 ──────────────────────────────────── */
+const app=document.getElementById('app');
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.xr.enabled=true;
+app.appendChild(renderer.domElement);
+
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,0.1,300);
+camera.position.set(0,1.5,0);
+camera.rotation.order='YXZ';
+scene.add(camera);
+
+const hemi=new THREE.HemisphereLight(0xffd9b0,0x33402f,0.85); scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xffc89a,0.9); sun.position.set(0,4,-40); scene.add(sun);
+
+let world=new THREE.Group(); scene.add(world);   // 정원 콘텐츠
+let sky=null;                                     // 그라데이션 하늘(별도)
+
+/* ── HUD (카메라 자식) ──────────────────────────── */
+const hudCanvas=document.createElement('canvas'); hudCanvas.width=900; hudCanvas.height=300;
+const hctx=hudCanvas.getContext('2d');
+const hudTex=new THREE.CanvasTexture(hudCanvas); hudTex.anisotropy=4;
+const hud=new THREE.Mesh(new THREE.PlaneGeometry(1.1,0.366),
+  new THREE.MeshBasicMaterial({map:hudTex,transparent:true,depthTest:false}));
+hud.position.set(0,-0.5,-1.5); hud.renderOrder=999; camera.add(hud);
+
+/* ── 호흡 안내 원 (카메라 자식) ─────────────────── */
+const ringMat=new THREE.MeshBasicMaterial({color:0xf3dcc4,transparent:true,opacity:0.9,depthTest:false});
+const ring=new THREE.Mesh(new THREE.TorusGeometry(0.34,0.022,16,64),ringMat);
+ring.position.set(0,0,-2.4); ring.renderOrder=1000; camera.add(ring);
+let ringScale=1, ringTarget=1;
+
+/* ── 장면 빌드 ──────────────────────────────────── */
+function clearGroup(g){
+  for(let i=g.children.length-1;i>=0;i--){
+    const c=g.children[i];
+    if(c.children && c.children.length) clearGroup(c);
+    if(c.geometry) c.geometry.dispose();
+    if(c.material){ Array.isArray(c.material)?c.material.forEach(m=>m.dispose()):c.material.dispose(); }
+    g.remove(c);
+  }
+}
+
+function buildSky(){
+  if(sky){ scene.remove(sky); sky.geometry.dispose(); sky.material.dispose(); }
+  const geo=new THREE.SphereGeometry(120,32,18);
+  const top=new THREE.Color(0x243a66), mid=new THREE.Color(0xd9764a), bot=new THREE.Color(0xf4b46a);
+  const p=geo.attributes.position, cols=[], c=new THREE.Color();
+  for(let i=0;i<p.count;i++){
+    const y=p.getY(i)/120;            // -1..1
+    if(y>0.05) c.copy(mid).lerp(top,(y-0.05)/0.95);
+    else c.copy(bot).lerp(mid,(y+1)/1.05);
+    cols.push(c.r,c.g,c.b);
+  }
+  geo.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));
+  sky=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.BackSide,fog:false}));
+  scene.add(sky);
+}
+
+function buildGarden(){
+  clearGroup(world);
+  buildSky();
+  scene.fog=new THREE.FogExp2(0xd98a5a,0.018);
+
+  // 바닥(잔디)
+  const ground=new THREE.Mesh(new THREE.CircleGeometry(70,48),
+    new THREE.MeshStandardMaterial({color:0x3c5a38,roughness:1}));
+  ground.rotation.x=-Math.PI/2; ground.position.y=0; world.add(ground);
+
+  // 중앙 산책로
+  const path=new THREE.Mesh(new THREE.PlaneGeometry(3.0,26),
+    new THREE.MeshStandardMaterial({color:0xb8a489,roughness:1}));
+  path.rotation.x=-Math.PI/2; path.position.set(0,0.01,-11); world.add(path);
+
+  // 석양 태양 + 글로우
+  const sunBall=new THREE.Mesh(new THREE.SphereGeometry(3.2,24,16),
+    new THREE.MeshBasicMaterial({color:0xffe2b0,fog:false}));
+  sunBall.position.set(0,3.4,-58); world.add(sunBall);
+  const glow=new THREE.Mesh(new THREE.SphereGeometry(6.5,24,16),
+    new THREE.MeshBasicMaterial({color:0xffb070,transparent:true,opacity:0.28,fog:false}));
+  glow.position.copy(sunBall.position); world.add(glow);
+
+  // 장미 화단 — 양옆 줄지어 배치(중앙 산책로 비움)
+  const bushGreens=[0x2f6b3a,0x357a42,0x2a5e34,0x3d8a4c];
+  const roseCols=[0xd23b5a,0xe05a78,0xc0264a,0xf07a90,0xb83048,0xe87a6a];
+  const bushes=[];
+  for(let x=-6.6;x<=6.6;x+=2.2){
+    if(Math.abs(x)<1.9) continue;                  // 산책로
+    for(let z=-2;z>=-22.01;z-=2.2){
+      const jx=(Math.random()-0.5)*0.6, jz=(Math.random()-0.5)*0.6;
+      bushes.push({x:x+jx, z:z+jz, s:0.8+Math.random()*0.6,
+                   g:bushGreens[(Math.random()*bushGreens.length)|0]});
+    }
+  }
+  // 덤불(인스턴스)
+  const bGeo=new THREE.IcosahedronGeometry(0.55,0);
+  const bMat=new THREE.MeshStandardMaterial({roughness:0.95,flatShading:true});
+  const bIM=new THREE.InstancedMesh(bGeo,bMat,bushes.length);
+  const d=new THREE.Object3D(), col=new THREE.Color();
+  bushes.forEach((b,i)=>{
+    d.position.set(b.x, 0.5*b.s, b.z); d.scale.setScalar(b.s);
+    d.rotation.y=Math.random()*Math.PI; d.updateMatrix();
+    bIM.setMatrixAt(i,d.matrix); bIM.setColorAt(i,col.setHex(b.g));
+  });
+  bIM.instanceMatrix.needsUpdate=true; if(bIM.instanceColor)bIM.instanceColor.needsUpdate=true;
+  world.add(bIM);
+
+  // 장미꽃(인스턴스) — 덤불마다 여러 송이
+  const rPer=6, rGeo=new THREE.SphereGeometry(0.09,7,6);
+  const rMat=new THREE.MeshStandardMaterial({roughness:0.7});
+  const rIM=new THREE.InstancedMesh(rGeo,rMat,bushes.length*rPer);
+  let ri=0;
+  bushes.forEach(b=>{
+    for(let k=0;k<rPer;k++){
+      const a=Math.random()*Math.PI*2, rad=0.34*b.s*Math.random();
+      d.position.set(b.x+Math.cos(a)*rad, 0.5*b.s+0.32*b.s+Math.random()*0.18*b.s, b.z+Math.sin(a)*rad);
+      d.scale.setScalar(0.7+Math.random()*0.7); d.rotation.set(0,0,0); d.updateMatrix();
+      rIM.setMatrixAt(ri,d.matrix); rIM.setColorAt(ri,col.setHex(roseCols[(Math.random()*roseCols.length)|0]));
+      ri++;
+    }
+  });
+  rIM.instanceMatrix.needsUpdate=true; if(rIM.instanceColor)rIM.instanceColor.needsUpdate=true;
+  world.add(rIM);
+
+  // 먼 울타리 나무(깊이감)
+  const hGeo=new THREE.ConeGeometry(1.4,3.4,7);
+  const hMat=new THREE.MeshStandardMaterial({color:0x274a2c,roughness:1,flatShading:true});
+  const hIM=new THREE.InstancedMesh(hGeo,hMat,40);
+  for(let i=0;i<40;i++){
+    const a=(i/40)*Math.PI*2, rad=26+Math.random()*4;
+    d.position.set(Math.cos(a)*rad,1.7,Math.sin(a)*rad-8); d.scale.setScalar(0.8+Math.random()*0.9);
+    d.rotation.set(0,Math.random()*Math.PI,0); d.updateMatrix(); hIM.setMatrixAt(i,d.matrix);
+  }
+  hIM.instanceMatrix.needsUpdate=true; world.add(hIM);
+
+  scene.background=new THREE.Color(0xd9764a);
+  hemi.intensity=0.9; sun.intensity=0.9;
+}
+
+/* ── 단계 스케줄 / 상태머신 ─────────────────────── */
+let schedule=[], totalDur=0;
+let state='idle';            // idle|running|paused|done
+let tStart=0, tElapsed=0, phaseIdx=-1;
+
+function buildSchedule(){
+  schedule=[{name:'prepare',dur:PREPARE,cycle:0}];
+  for(let i=0;i<cfg.cycles;i++){
+    schedule.push({name:'inhale',dur:cfg.inhale,cycle:i+1});
+    schedule.push({name:'rest',  dur:cfg.rest,  cycle:i+1});
+  }
+  totalDur=schedule.reduce((s,p)=>s+p.dur,0);
+}
+function locate(t){
+  let acc=0;
+  for(let i=0;i<schedule.length;i++){
+    if(t<acc+schedule[i].dur) return {idx:i, within:t-acc, rem:acc+schedule[i].dur-t};
+    acc+=schedule[i].dur;
+  }
+  return {idx:schedule.length-1, within:schedule[schedule.length-1].dur, rem:0};
+}
+
+function startSession(){ buildGarden(); buildSchedule(); state='running'; tStart=performance.now(); tElapsed=0; phaseIdx=-1; ringScale=1; ringTarget=1; chime(440,.35); }
+function togglePause(){
+  if(state==='running'){ state='paused'; chime(330,.4); }
+  else if(state==='paused'){ state='running'; tStart=performance.now()-tElapsed*1000; chime(440,.4); }
+  else if(state==='done'||state==='idle'){ startSession(); }
+}
+function onPhaseEnter(p){
+  if(p.name==='inhale') chime(523,.5);
+  else if(p.name==='rest') chime(392,.5);
+  else chime(440,.3);
+}
+
+/* ── 오디오 ─────────────────────────────────────── */
+let actx=null;
+function initAudio(){ if(!actx){ try{actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){} } }
+function chime(f,d){ if(!actx)return; const o=actx.createOscillator(),g=actx.createGain();
+  o.type='sine';o.frequency.value=f;o.connect(g);g.connect(actx.destination);
+  const t=actx.currentTime;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.14,t+.06);
+  g.gain.exponentialRampToValueAtTime(.0001,t+d);o.start(t);o.stop(t+d+.05); }
+
+/* ── HUD 그리기 ─────────────────────────────────── */
+const LABEL={prepare:'준비',inhale:'흡입',rest:'휴식',done:'완료'};
+const GUIDE={
+  prepare:'곧 시작합니다 · 편안히 앉으세요',
+  inhale:'천천히 향을 들이마시며 장미를 떠올리세요',
+  rest:'편안히 숨을 내쉬고 쉬세요',
+  done:'세션 종료 · 핀치로 다시 시작'
+};
+const PHASECOL={prepare:'#e0728a',inhale:'#e8a23c',rest:'#7fcbbd',done:'#e0728a'};
+function roundRect(x,y,w,h,r){ hctx.beginPath();hctx.moveTo(x+r,y);hctx.arcTo(x+w,y,x+w,y+h,r);hctx.arcTo(x+w,y+h,x,y+h,r);hctx.arcTo(x,y+h,x,y,r);hctx.arcTo(x,y,x+w,y,r);hctx.closePath(); }
+function drawHUD(phase, rem){
+  const W=900,H=300; hctx.clearRect(0,0,W,H);
+  hctx.fillStyle='rgba(20,13,16,.55)'; roundRect(0,0,W,H,28); hctx.fill();
+  const paused=(state==='paused');
+  const name = state==='done'?'done':phase.name;
+  // 상단: 향/사이클
+  hctx.textAlign='left'; hctx.fillStyle='#b89aa1'; hctx.font='600 24px sans-serif';
+  hctx.fillText('향: 장미 정원', 46, 56);
+  hctx.textAlign='right';
+  if(state!=='done'){ hctx.fillText('사이클 '+Math.max(1,phase.cycle)+'/'+cfg.cycles, W-46, 56); }
+  // 중앙: 단계명 + 카운트다운
+  hctx.textAlign='center'; hctx.fillStyle=PHASECOL[name]||'#f3e8ea'; hctx.font='700 68px sans-serif';
+  hctx.fillText(paused?'일시정지':(LABEL[name]||''), W/2, 150);
+  if(state!=='done' && !paused){
+    hctx.fillStyle='#f3e8ea'; hctx.font='700 56px ui-monospace,monospace';
+    hctx.fillText(Math.max(0,Math.ceil(rem))+'s', W/2, 218);
+  }
+  // 하단 안내
+  hctx.fillStyle='#e3c9cf'; hctx.font='400 26px sans-serif';
+  hctx.fillText(paused?'다시 시작하려면 핀치하세요':(GUIDE[name]||''), W/2, 272);
+  hudTex.needsUpdate=true;
+}
+
+/* ── 렌더 루프 ──────────────────────────────────── */
+const clock=new THREE.Clock();
+let hudAcc=0, curPhase=schedule[0]||{name:'prepare',dur:PREPARE,cycle:0}, curRem=0;
+function render(){
+  const dt=Math.min(clock.getDelta(),0.05);
+
+  if(state==='running'){
+    tElapsed=(performance.now()-tStart)/1000;
+    if(tElapsed>=totalDur){ state='done'; chime(523,.6); setTimeout(()=>chime(659,.7),140); }
+    else {
+      const loc=locate(tElapsed); curPhase=schedule[loc.idx]; curRem=loc.rem;
+      if(loc.idx!==phaseIdx){ phaseIdx=loc.idx; onPhaseEnter(curPhase); }
+      const ph=curPhase;
+      if(ph.name==='inhale')      ringTarget=lerp(1.0,2.4, loc.within/ph.dur);
+      else if(ph.name==='rest')   ringTarget=lerp(2.4,1.0, loc.within/ph.dur);
+      else                        ringTarget=1.0+0.07*Math.sin(tElapsed*2.2);
+      // 단계별 원 색상
+      const c = ph.name==='inhale'?0xe8a23c : ph.name==='rest'?0x7fcbbd : 0xf3dcc4;
+      ringMat.color.lerp(new THREE.Color(c), Math.min(1,dt*3));
+    }
+  } else if(state==='done'){ ringTarget=1.0; }
+
+  ringScale += (ringTarget-ringScale)*Math.min(1,dt*4);
+  ring.scale.setScalar(ringScale);
+  ring.visible = (state==='running'||state==='paused');
+
+  hudAcc+=dt; if(hudAcc>0.06){ drawHUD(curPhase, curRem); hudAcc=0; }
+  renderer.render(scene,camera);
+}
+
+/* ── UI 바인딩 ──────────────────────────────────── */
+const $=s=>document.querySelector(s);
+$('#inh').oninput=e=>{ cfg.inhale=+e.target.value; $('#inhVal').textContent=e.target.value+'초'; };
+$('#rest').oninput=e=>{ cfg.rest=+e.target.value; $('#restVal').textContent=e.target.value+'초'; };
+$('#cyc').oninput=e=>{ cfg.cycles=+e.target.value; $('#cycVal').textContent=e.target.value+'회'; };
+
+/* ── VR / 미리보기 ──────────────────────────────── */
+const overlay=$('#overlay'), enterBtn=$('#enterVR'), prevBtn=$('#preview'),
+      xrnote=$('#xrnote'), exitBtn=$('#exit'), pvhint=$('#pvhint');
+
+const embedded = (window.self!==window.top);
+async function showDiag(){
+  let vr=false, ar=false;
+  if(navigator.xr){
+    try{ vr=await navigator.xr.isSessionSupported('immersive-vr'); }catch(e){}
+    try{ ar=await navigator.xr.isSessionSupported('immersive-ar'); }catch(e){}
+  }
+  const lines=[
+    '프로토콜:'+location.protocol,
+    'WebXR:'+(navigator.xr?'있음':'없음'),
+    '보안컨텍스트:'+(window.isSecureContext?'예':'아니오'),
+    '임베드창:'+(embedded?'예(차단 위험)':'아니오'),
+    'immersive-vr:'+(vr?'지원':'미지원'),
+    'immersive-ar:'+(ar?'지원':'미지원')
+  ];
+  if(navigator.xr && (vr||ar)) enterBtn.disabled=false;
+  if(embedded){
+    xrnote.innerHTML='<b style="color:#e86b6b">이 페이지가 임베드된 창에서 실행 중입니다.</b> WebXR이 차단됩니다. 오른쪽 위 메뉴로 <b>새 탭에서 열기</b>를 하거나, 갤럭시 XR의 Chrome에서 <b>직접 URL로</b> 여세요.<br><span style="opacity:.7">'+lines.join(' · ')+'</span>';
+  } else if(navigator.xr && (vr||ar)){
+    xrnote.innerHTML='헤드셋에서 [VR로 시작]을 누르고, 권한 요청(3D 매핑·카메라 추적)이 뜨면 <b>허용</b>하세요.<br><span style="opacity:.7">'+lines.join(' · ')+'</span>';
+  } else {
+    xrnote.innerHTML='몰입형 XR을 시작할 수 없습니다. [화면 미리보기]로 확인하세요.<br><span style="opacity:.7">'+lines.join(' · ')+'</span>';
+  }
+}
+showDiag();
+
+let xrSession=null, attemptLog=[];
+// 갤럭시 XR 호환: 옵션 없이 immersive-vr부터, 안 되면 단계적 폴백
+async function requestXRSession(){
+  attemptLog=[];
+  const attempts=[
+    ['immersive-vr', undefined],
+    ['immersive-vr', {optionalFeatures:['hand-tracking']}],
+    ['immersive-ar', undefined],
+    ['immersive-ar', {optionalFeatures:['hand-tracking']}]
+  ];
+  let lastErr;
+  for(const [mode,init] of attempts){
+    try{
+      if(navigator.xr.isSessionSupported){ const ok=await navigator.xr.isSessionSupported(mode); if(!ok){ attemptLog.push(mode+':미지원'); continue; } }
+      const s=await navigator.xr.requestSession(mode, init);
+      attemptLog.push(mode+':성공');
+      return s;
+    }catch(e){ attemptLog.push(mode+':'+((e&&e.name)||'실패')); lastErr=e; }
+  }
+  throw lastErr||new Error('지원되는 XR 세션이 없습니다');
+}
+enterBtn.onclick=async()=>{
+  initAudio();
+  try{
+    xrSession=await requestXRSession();
+    try{ renderer.xr.setReferenceSpaceType('local'); }catch(e){}  // 좌식 기준, 가장 호환성 높음
+    await renderer.xr.setSession(xrSession);
+    overlay.classList.add('hidden');
+    startSession();
+    renderer.setAnimationLoop(render);
+    xrSession.addEventListener('select',togglePause);
+    xrSession.addEventListener('end',()=>{ xrSession=null; renderer.setAnimationLoop(null);
+      overlay.classList.remove('hidden'); state='idle'; requestAnimationFrame(loop); });
+  }catch(e){
+    const msg=(e&&e.message)?e.message:String(e);
+    xrnote.innerHTML='<b style="color:#e86b6b">VR 시작 실패:</b> '+msg
+      +'<br><span style="opacity:.7">시도: '+attemptLog.join(' · ')
+      +'<br>프로토콜:'+location.protocol+' · 보안컨텍스트:'+(window.isSecureContext?'예':'아니오')+' · 임베드창:'+(embedded?'예':'아니오')+'</span>'
+      +'<br>'+((location.protocol==='file:'||location.protocol==='http:')
+        ? '원인은 <b>출처</b>입니다. file://·http:// 에서는 Android XR이 XR 권한을 못 줍니다. <b>https</b> 주소로 호스팅해 여세요.'
+        : (embedded
+          ? '원인은 <b>임베드된 창</b>일 가능성이 큽니다. 새 탭/직접 URL로 여세요.'
+          : '권한 요청이 떴는지 확인해 주세요. 안 떴다면 헤드셋 Chrome의 사이트 권한을 확인하세요.'));
+  }
+};
+
+let previewing=false;
+prevBtn.onclick=()=>{ initAudio(); overlay.classList.add('hidden'); exitBtn.style.display='block'; pvhint.style.display='block';
+  previewing=true; camYaw=0;camPitch=0; startSession(); };
+exitBtn.onclick=()=>{ previewing=false; state='idle'; exitBtn.style.display='none'; pvhint.style.display='none'; overlay.classList.remove('hidden'); };
+
+/* 미리보기 둘러보기 + 클릭 일시정지/재개 */
+let camYaw=0,camPitch=0,drag=false,lx=0,ly=0,moved=false;
+renderer.domElement.addEventListener('pointerdown',e=>{drag=true;moved=false;lx=e.clientX;ly=e.clientY;});
+addEventListener('pointermove',e=>{ if(!drag)return; const dx=e.clientX-lx,dy=e.clientY-ly;lx=e.clientX;ly=e.clientY;
+  if(Math.abs(dx)+Math.abs(dy)>3)moved=true; camYaw-=dx*0.005; camPitch=Math.max(-1.1,Math.min(1.1,camPitch-dy*0.005)); });
+addEventListener('pointerup',()=>{ if(drag&&!moved&&previewing)togglePause(); drag=false; });
+
+function loop(){ if(renderer.xr.isPresenting)return;
+  camera.rotation.y=camYaw; camera.rotation.x=camPitch;
+  render(); requestAnimationFrame(loop); }
+requestAnimationFrame(loop);
+
+addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
+
+// 초기 미리보기용 정원 한 번 구성(정지 상태)
+buildGarden();
+</script>
+</body>
+</html>
