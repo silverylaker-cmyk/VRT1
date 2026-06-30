@@ -418,7 +418,48 @@ SCENES.targets = {
   metric(k){ return '점수 '+(SS.score||0); }
 };
 
-const SCENE_ORDER=['aisle','okn','flow','grating','vor','pursuit','targets','street','escalator','room'];
+/* ── 11. 두 표적 간 능동 안구-머리 이동 (대체운동) ─ */
+SCENES.eyehead = {
+  name:'능동 안구-머리 이동', group:'시선 안정화 · 대체운동', useSpeed:false, useFixation:false,
+  hint:'두 표적 사이를 옮길 때 눈을 먼저 표적으로 보낸 뒤 머리가 따라가게 합니다(안구-머리 협응·대체 촉진).',
+  defaults:{plane:'h', sep:20, interval:3},
+  controls:[
+    {k:'plane',label:'표적 배치',type:'seg',options:[['h','좌우'],['v','상하']]},
+    {k:'sep',label:'표적 간격',type:'range',min:10,max:40,step:5,unit:'°',hint:'두 표적 사이 시야각. 또렷함이 유지되는 범위에서 넓히세요.'},
+    {k:'interval',label:'전환 주기',type:'range',min:1.5,max:5,step:0.5,unit:' s',hint:'한 표적에서 다른 표적으로 옮기는 간격.'}
+  ],
+  build(){ buildEyeHead(); },
+  update(dt,k,t){ SS.switchT+=dt; if(SS.switchT>=opts.interval){ SS.switchT=0; SS.active^=1; setActiveEH(); chime(opts.plane==='h'?640:560,.07); } },
+  cue(){ const r=SS.active===0; return '눈 먼저 표적으로 → 머리 따라가기 ('+(opts.plane==='h'?(r?'왼쪽':'오른쪽'):(r?'위':'아래'))+')'; },
+  metric(){ return '전환 '+opts.interval+'s'; }
+};
+
+/* ── 12. 기억 표적(remembered/imaginary) (대체운동) ─ */
+SCENES.remembered = {
+  name:'기억 표적 운동', group:'시선 안정화 · 대체운동', useSpeed:false, useFixation:false,
+  hint:'표적 위치를 기억한 뒤 암전 상태에서 그 지점을 응시한 채 고개를 움직입니다(중추 예측 훈련). 표적이 다시 나타나면 정확도를 확인하세요.',
+  defaults:{plane:'h', darkT:4},
+  controls:[
+    {k:'plane',label:'머리 방향',type:'seg',options:[['h','좌우'],['v','상하']]},
+    {k:'darkT',label:'암전(기억) 길이',type:'range',min:2,max:8,step:1,unit:' s',hint:'표적 없이 기억으로 응시하며 머리를 움직이는 시간.'}
+  ],
+  build(){ buildRemembered(); },
+  update(dt,k,t){
+    SS.remT+=dt; const showT=2.0, checkT=1.5, cyc=showT+opts.darkT+checkT;
+    if(SS.remT>=cyc){ SS.remT-=cyc; chime(523,.2); }
+    let ph = SS.remT<showT?'show':(SS.remT<showT+opts.darkT?'dark':'check');
+    if(ph!==SS.phase){ SS.phase=ph; chime(ph==='dark'?330:ph==='check'?660:494,.14); }
+    if(SS.target) SS.target.visible=(ph!=='dark');
+    if(SS.dots) SS.dots.visible=(ph!=='dark');
+    const tgt=(ph==='dark')?SS.bgDark:SS.bgNormal;
+    if(scene.background&&scene.background.lerp) scene.background.lerp(tgt,Math.min(1,dt*4));
+    hemi.intensity=lerp(hemi.intensity, ph==='dark'?0.12:0.9, Math.min(1,dt*4));
+  },
+  cue(){ return SS.phase==='show'?'표적 위치를 기억하세요': SS.phase==='dark'?('어둠 속에서 표적을 응시한 채 고개를 '+(opts.plane==='h'?'좌우로':'상하로')):'표적을 정확히 보고 있었나요?'; },
+  metric(){ return ({show:'기억',dark:'암전',check:'확인'}[SS.phase]||'기억'); }
+};
+
+const SCENE_ORDER=['aisle','okn','flow','grating','vor','pursuit','targets','eyehead','remembered','street','escalator','room'];
 
 /* ════════════════════════════════════════════════════════════
    개별 빌더
@@ -633,6 +674,38 @@ function updateTargets(dt){
 
 function mkBox(w,h,d,mat,x,y,z){ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat); m.position.set(x,y,z); return m; }
 
+// 표적 1개(원판+흰 테두리) 그룹
+function makeTarget(color){ const g=new THREE.Group();
+  g.add(new THREE.Mesh(new THREE.CircleGeometry(0.09,24),new THREE.MeshBasicMaterial({color})));
+  g.add(new THREE.Mesh(new THREE.RingGeometry(0.11,0.13,24),new THREE.MeshBasicMaterial({color:0xffffff})));
+  return g; }
+// 공간 기준용 옅은 배경 점 — 참조 반환(암전 시 끌 수 있게)
+function bgDots(n,R){ const pos=new Float32Array(n*3);
+  for(let i=0;i<n;i++){ const u=Math.random()*2-1,a=Math.random()*Math.PI*2,r=Math.sqrt(1-u*u);
+    pos[i*3]=R*r*Math.cos(a); pos[i*3+1]=R*u; pos[i*3+2]=-Math.abs(R*r*Math.sin(a))-2; }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  const p=new THREE.Points(g,new THREE.PointsMaterial({color:0x33414a,size:0.12})); world.add(p); return p; }
+
+function buildEyeHead(){
+  const z=-2.0, off=Math.tan(opts.sep*Math.PI/180)*Math.abs(z);
+  const A=makeTarget(0xe8a23c), B=makeTarget(0xe8a23c);
+  if(opts.plane==='h'){ A.position.set(-off,0,z); B.position.set(off,0,z); }
+  else { A.position.set(0,off,z); B.position.set(0,-off,z); }
+  world.add(A); world.add(B); SS.tA=A; SS.tB=B; SS.active=0; SS.switchT=0; setActiveEH();
+  bgDots(120,8);
+  scene.background=new THREE.Color(0x0e1620); scene.fog=null; hemi.intensity=0.9; dlight.intensity=0.4;
+}
+function setActiveEH(){ const on=SS.active===0?SS.tA:SS.tB, off=SS.active===0?SS.tB:SS.tA;
+  on.scale.setScalar(1.3); off.scale.setScalar(0.7);
+  on.children[0].material.color.setHex(0xffd27a); off.children[0].material.color.setHex(0x6e5226); }
+
+function buildRemembered(){
+  const z=-2.0, T=makeTarget(0xe8a23c); T.position.set(0,0,z); world.add(T); SS.target=T;
+  SS.dots=bgDots(100,8); SS.remT=0; SS.phase='show';
+  SS.bgNormal=new THREE.Color(0x14202a); SS.bgDark=new THREE.Color(0x02050a);
+  scene.background=SS.bgNormal.clone(); scene.fog=null; hemi.intensity=0.9; dlight.intensity=0.4;
+}
+
 /* ── 장면 빌드 진입점 ──────────────────────────── */
 function buildScene(){
   clearGroup(world);
@@ -684,6 +757,7 @@ function drawHUD(k){
     hctx.fillText((opts.plane==='h'?'◀ 박자에 맞춰 고개 좌우 ▶':'▲ 박자에 맞춰 고개 상하 ▼'), W/2,250);
     // 페이싱 카렛
     const cx=W/2 + (SS.pace||0)*180; hctx.fillStyle='#e8a23c'; hctx.beginPath(); hctx.arc(cx,292,9,0,7); hctx.fill(); }
+  else if(sc.cue){ hctx.fillStyle='#3ec6b4'; hctx.font='700 26px sans-serif'; hctx.fillText(sc.cue(), W/2,250); }
   else { hctx.fillStyle='#3ec6b4'; hctx.font='700 30px sans-serif'; hctx.fillText('어지러우면 핀치로 즉시 정지', W/2,250); }
   hudTex.needsUpdate=true;
 }
