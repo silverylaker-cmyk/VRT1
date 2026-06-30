@@ -71,6 +71,23 @@
     cursor:pointer;border:1px solid var(--line);border-radius:99px;padding:9px 16px;background:rgba(14,20,24,.6);backdrop-filter:blur(8px)}
   #pvhint{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:5;display:none;font-size:12px;
     color:var(--muted);background:rgba(14,20,24,.6);padding:8px 14px;border-radius:99px;backdrop-filter:blur(8px)}
+
+  /* 세션 후 자가평가 / 기록 */
+  #assess{position:fixed;inset:0;z-index:10;overflow-y:auto;background:
+    radial-gradient(100% 60% at 50% 0%, #15222a, #0e1418 60%);color:var(--ink);
+    opacity:0;pointer-events:none;transition:opacity .35s ease}
+  #assess.show{opacity:1;pointer-events:auto}
+  .scale{display:grid;grid-template-columns:repeat(11,1fr);gap:6px;margin:18px 0 6px}
+  .scale button{font:inherit;font-weight:700;font-size:15px;color:var(--ink);cursor:pointer;
+    background:#1d272e;border:1px solid var(--line);border-radius:10px;padding:14px 0;transition:.12s}
+  .scale button:hover{border-color:var(--teal)}
+  .scale button.sel{background:var(--teal);border-color:var(--teal);color:#06120f}
+  .scalelabels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+  #histList .hrow{display:flex;justify-content:space-between;align-items:center;gap:10px;
+    font-size:12.5px;padding:9px 0;border-bottom:1px solid var(--line)}
+  #histList .hrow:last-child{border-bottom:none}
+  #histList .hrow .t{color:var(--muted);font-family:ui-monospace,monospace;font-size:11.5px}
+  #histList .hrow b{color:var(--amber)}
 </style>
 </head>
 <body>
@@ -134,7 +151,8 @@
   <div class="panel">
     <h2>옵션</h2>
     <div class="field toggle"><div><label>중앙 응시점 표시</label><p class="hint" style="margin-top:4px">고정점을 보면 자극이 약해집니다(난이도 낮춤).</p></div><div class="sw" id="fixSw"></div></div>
-    <div class="field toggle" style="margin-bottom:0"><div><label>점진적 시작(램프업)</label><p class="hint" style="margin-top:4px">시작 후 강도를 서서히 끌어올립니다.</p></div><div class="sw on" id="rampSw"></div></div>
+    <div class="field toggle"><div><label>점진적 시작(램프업)</label><p class="hint" style="margin-top:4px">시작 후 강도를 서서히 끌어올립니다.</p></div><div class="sw on" id="rampSw"></div></div>
+    <div class="field toggle" style="margin-bottom:0"><div><label>지나가는 사람(군중)</label><p class="hint" style="margin-top:4px">마트 통로에 보행자를 추가해 시각 복잡도를 높입니다.</p></div><div class="sw" id="crowdSw"></div></div>
   </div>
 
   <div class="start">
@@ -142,12 +160,33 @@
     <button id="preview" class="ghost">화면 미리보기</button>
   </div>
   <p id="xrnote">VR 지원 여부 확인 중…</p>
+  <p style="text-align:center;margin-top:10px"><a href="#" id="histLink" style="color:var(--teal);font-size:12.5px;text-decoration:none">측정 기록 보기 · CSV 내보내기</a></p>
+</div></div>
+
+<div id="assess"><div class="wrap">
+  <div id="assessInput">
+    <div class="eyebrow">세션 후 자가평가</div>
+    <h1>지금 어지럼 정도는?</h1>
+    <p class="lede">이번 세션 직후의 어지럼을 선택하세요. <b>0 = 전혀 없음</b>, <b>10 = 매우 심함</b>.</p>
+    <div class="scale" id="dizScale"></div>
+    <div class="scalelabels"><span>0 없음</span><span>5 보통</span><span>10 심함</span></div>
+    <div class="start"><button id="assessSkip" class="ghost">건너뛰기</button></div>
+  </div>
+  <div class="panel" style="margin-top:18px">
+    <h2>최근 측정 기록</h2>
+    <div id="histList"></div>
+    <div class="start" style="margin-top:14px">
+      <button id="histExport" class="ghost">CSV 내보내기</button>
+      <button id="histClear" class="ghost">기록 비우기</button>
+    </div>
+  </div>
+  <div class="start"><button id="assessClose" class="cta">닫기</button></div>
 </div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 /* ── 파라미터 (UI에서 읽음) ─────────────────────── */
-const params = { scene:'aisle', speed:0.4, density:'med', dir:'h', oknPattern:'dots', duration:180, fixation:false, ramp:true };
+const params = { scene:'aisle', speed:0.4, density:'med', dir:'h', oknPattern:'dots', duration:180, fixation:false, ramp:true, crowd:false };
 const RAMP_SECONDS = 6;
 const AISLE_MAX_SPEED = 2.6;   // m/s
 const OKN_MAX_SPEED   = 0.9;   // rad/s
@@ -172,6 +211,8 @@ const dir=new THREE.DirectionalLight(0xffffff,0.7); dir.position.set(3,6,2); sce
 
 let world=new THREE.Group(); scene.add(world);   // 통로(이동) 컨테이너
 let oknGroup=new THREE.Group(); scene.add(oknGroup); // 옵토키네틱(회전) 컨테이너
+let crowdBodies=null, crowdHeads=null, crowdInfo=[]; // 마트 통로 군중(인스턴스)
+const crowdDummy=new THREE.Object3D();
 
 /* ── HUD / 정지오버레이 / 응시점 (카메라 자식) ───── */
 const hudCanvas=document.createElement('canvas'); hudCanvas.width=900; hudCanvas.height=300;
@@ -204,6 +245,7 @@ function clearGroup(g){
 
 function buildAisle(density){
   clearGroup(world);
+  crowdBodies=null; crowdHeads=null; crowdInfo=[];
   const LEN=60, half=2.2;
   // 바닥/천장/뒷판
   const floorMat=new THREE.MeshStandardMaterial({color:0x9aa0a6,roughness:1});
@@ -245,10 +287,54 @@ function buildAisle(density){
   });
   im.instanceMatrix.needsUpdate=true; if(im.instanceColor)im.instanceColor.needsUpdate=true;
   world.add(im);
+  if(params.crowd) buildCrowd(LEN);
   world.position.set(0,0,0);
   scene.background=new THREE.Color(0xc9d2d8);
   scene.fog=new THREE.FogExp2(0xc9d2d8,0.045);
   hemi.intensity=0.95; dir.intensity=0.7;
+}
+
+// 통로 보행자(군중) — PERIOD(6m)마다 동일 패턴(spacing 1.5 → 4명/주기)으로 끊김 없음
+function buildCrowd(LEN){
+  const spacing=1.5;                 // PERIOD/spacing = 4 (정수) → wrap 시 이음매 없음
+  const N=Math.floor((LEN-3)/spacing);
+  // 4종 보행자 원형(주기 내 위치/색/키/보행위상). i%4로 반복 → 끊김 없음.
+  const arche=[
+    {x:-1.05, c:0x3a4a6b, h:1.02, ph:0.0},
+    {x: 0.95, c:0x6b3a3a, h:1.10, ph:1.7},
+    {x:-0.25, c:0x37624a, h:0.95, ph:3.3},
+    {x: 0.35, c:0x6b5a3a, h:1.06, ph:4.9}
+  ];
+  const bodyGeo=new THREE.CylinderGeometry(0.15,0.20,1.0,8);
+  const bodyMat=new THREE.MeshStandardMaterial({roughness:0.9});
+  const headGeo=new THREE.SphereGeometry(0.13,10,8);
+  const headMat=new THREE.MeshStandardMaterial({color:0xd9a877,roughness:0.85});
+  crowdBodies=new THREE.InstancedMesh(bodyGeo,bodyMat,N);
+  crowdHeads =new THREE.InstancedMesh(headGeo,headMat,N);
+  const col=new THREE.Color();
+  for(let i=0;i<N;i++){
+    const a=arche[i%4], z=-3.0 - i*spacing;
+    crowdInfo.push({x:a.x, z, h:a.h, ph:a.ph});
+    crowdBodies.setColorAt(i,col.setHex(a.c));
+  }
+  if(crowdBodies.instanceColor) crowdBodies.instanceColor.needsUpdate=true;
+  updateCrowd(0);                    // 초기 자세 한 번 적용
+  world.add(crowdBodies); world.add(crowdHeads);
+}
+
+// 매 프레임 가벼운 걸음 흔들림(상하/좌우). 위상은 원형별 고정값이라 wrap 후에도 동일.
+function updateCrowd(t){
+  if(!crowdBodies) return;
+  for(let i=0;i<crowdInfo.length;i++){
+    const p=crowdInfo[i];
+    const yb=Math.sin(t*3.2+p.ph)*0.04, xb=Math.sin(t*3.2+p.ph)*0.03;
+    crowdDummy.position.set(p.x+xb, 0.5*p.h+yb, p.z); crowdDummy.scale.set(1,p.h,1);
+    crowdDummy.rotation.set(0,0,0); crowdDummy.updateMatrix();
+    crowdBodies.setMatrixAt(i,crowdDummy.matrix);
+    crowdDummy.position.set(p.x+xb, 1.12*p.h+yb, p.z); crowdDummy.scale.set(1,1,1); crowdDummy.updateMatrix();
+    crowdHeads.setMatrixAt(i,crowdDummy.matrix);
+  }
+  crowdBodies.instanceMatrix.needsUpdate=true; crowdHeads.instanceMatrix.needsUpdate=true;
 }
 
 function buildOKN(density){
@@ -307,6 +393,7 @@ function buildOKNDrum(density){
 
 function buildScene(){
   clearGroup(world); clearGroup(oknGroup);
+  crowdBodies=null; crowdHeads=null; crowdInfo=[];
   if(params.scene==='aisle'){ buildAisle(params.density); }
   else { buildOKN(params.density); }
   fix.visible=params.fixation;
@@ -315,7 +402,8 @@ function buildScene(){
 /* ── 상태머신 ───────────────────────────────────── */
 let state='idle';      // idle|running|paused|done
 let tStart=0, tElapsed=0, ramp=0;
-function startSession(){ buildScene(); state='running'; tStart=performance.now(); tElapsed=0; ramp=params.ramp?0:1; chime(440,.4); }
+let sessionCompleted=false, lastSessionCtx=null;  // 자가평가 기록용
+function startSession(){ buildScene(); state='running'; tStart=performance.now(); tElapsed=0; ramp=params.ramp?0:1; sessionCompleted=false; chime(440,.4); }
 function togglePause(){
   if(state==='running'){ state='paused'; chime(330,.4); }
   else if(state==='paused'){ state='running'; tStart=performance.now()-tElapsed*1000; chime(440,.4); }
@@ -367,7 +455,7 @@ function render(){
   if(state==='running'){
     tElapsed=(performance.now()-tStart)/1000;
     if(params.ramp) ramp=Math.min(1, ramp+dt/RAMP_SECONDS); else ramp=1;
-    if(tElapsed>=params.duration){ state='done'; chime(523,.7); setTimeout(()=>chime(659,.7),120); }
+    if(tElapsed>=params.duration){ state='done'; sessionCompleted=true; lastSessionCtx=snapCtx(); chime(523,.7); setTimeout(()=>chime(659,.7),120); }
   } else {
     ramp=Math.max(0, ramp-dt*0.6); // 정지 시 자극 페이드아웃
   }
@@ -377,6 +465,7 @@ function render(){
   if(params.scene==='aisle'){
     world.position.z += AISLE_MAX_SPEED*k*dt;
     if(world.position.z>=PERIOD) world.position.z-=PERIOD;
+    if(crowdBodies && state==='running') updateCrowd(clock.elapsedTime);
   } else {
     const w=OKN_MAX_SPEED*k*dt;
     if(params.dir==='h') oknGroup.rotation.y+=w;
@@ -405,6 +494,69 @@ $('#spd').oninput=e=>{ params.speed=e.target.value/100; $('#spdVal').textContent
 $('#dur').oninput=e=>{ params.duration=e.target.value*60; $('#durVal').textContent=e.target.value+'분'; };
 $('#fixSw').onclick=function(){ this.classList.toggle('on'); params.fixation=this.classList.contains('on'); };
 $('#rampSw').onclick=function(){ this.classList.toggle('on'); params.ramp=this.classList.contains('on'); };
+$('#crowdSw').onclick=function(){ this.classList.toggle('on'); params.crowd=this.classList.contains('on'); };
+
+/* ── 세션 후 어지럼 자가평가 기록 (localStorage) ──── */
+const LOG_KEY='vrt_logs';
+function getLogs(){ try{ return JSON.parse(localStorage.getItem(LOG_KEY)||'[]'); }catch(e){ return []; } }
+function snapCtx(){
+  return {
+    scene: params.scene==='aisle'?'마트통로':'옵토키네틱',
+    pattern: params.scene==='okn'?(params.oknPattern==='drum'?'줄무늬':'점'):'',
+    dir: params.scene==='okn'?({h:'좌우',v:'상하',r:'회전'}[params.dir]):'',
+    speedPct: Math.round(params.speed*100),
+    density: ({low:'낮음',med:'보통',high:'높음'}[params.density]),
+    durationMin: Math.round(params.duration/60),
+    fixation: params.fixation, ramp: params.ramp, crowd: params.crowd
+  };
+}
+function saveLog(diz){
+  const c=lastSessionCtx||snapCtx();
+  const logs=getLogs();
+  logs.push(Object.assign({ts:new Date().toLocaleString('ko-KR'), dizziness:diz}, c));
+  while(logs.length>500) logs.shift();
+  try{ localStorage.setItem(LOG_KEY,JSON.stringify(logs)); }catch(e){}
+}
+function renderHistory(){
+  const logs=getLogs().slice(-10).reverse(), box=$('#histList');
+  if(!logs.length){ box.innerHTML='<p class="hint">아직 기록이 없습니다.</p>'; return; }
+  box.innerHTML=logs.map(l=>{
+    const tag=l.scene+(l.pattern?(' · '+l.pattern):'')+' · 속도'+l.speedPct+'%';
+    return '<div class="hrow"><span class="t">'+l.ts+'</span><span>'+tag+'</span><b>어지럼 '+l.dizziness+'</b></div>';
+  }).join('');
+}
+function exportCSV(){
+  const logs=getLogs();
+  if(!logs.length){ alert('내보낼 기록이 없습니다.'); return; }
+  const head=['일시','장면','패턴','방향','속도%','밀도','길이(분)','응시점','램프업','군중','어지럼0-10'];
+  const esc=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const rows=logs.map(l=>[l.ts,l.scene,l.pattern||'',l.dir||'',l.speedPct,l.density,l.durationMin,
+    l.fixation?'Y':'N',l.ramp?'Y':'N',l.crowd?'Y':'N',l.dizziness].map(esc).join(','));
+  const csv='﻿'+[head.map(esc).join(','),...rows].join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}), url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url;
+  a.download='vrt_records_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+const assess=$('#assess');
+function showAssess(withInput){
+  $('#assessInput').style.display = withInput?'block':'none';
+  $('#dizScale').querySelectorAll('button').forEach(b=>b.classList.remove('sel'));
+  renderHistory(); assess.classList.add('show');
+}
+function closeAssess(){ assess.classList.remove('show'); sessionCompleted=false; }
+(function buildScaleBtns(){
+  const box=$('#dizScale');
+  for(let n=0;n<=10;n++){ const b=document.createElement('button'); b.textContent=n;
+    b.onclick=()=>{ box.querySelectorAll('button').forEach(x=>x.classList.remove('sel')); b.classList.add('sel');
+      saveLog(n); renderHistory(); setTimeout(closeAssess,260); };
+    box.appendChild(b); }
+})();
+$('#assessSkip').onclick=closeAssess;
+$('#assessClose').onclick=closeAssess;
+$('#histExport').onclick=exportCSV;
+$('#histClear').onclick=()=>{ if(confirm('모든 측정 기록을 삭제할까요?')){ try{localStorage.removeItem(LOG_KEY);}catch(e){} renderHistory(); } };
+$('#histLink').onclick=e=>{ e.preventDefault(); showAssess(false); };
 
 /* ── VR / 미리보기 ──────────────────────────────── */
 const overlay=$('#overlay'), enterBtn=$('#enterVR'), prevBtn=$('#preview'),
@@ -469,7 +621,8 @@ enterBtn.onclick=async()=>{
     renderer.setAnimationLoop(render);
     xrSession.addEventListener('select',togglePause);
     xrSession.addEventListener('end',()=>{ xrSession=null; renderer.setAnimationLoop(null);
-      overlay.classList.remove('hidden'); state='idle'; requestAnimationFrame(loop); });
+      overlay.classList.remove('hidden'); const done=sessionCompleted; state='idle'; requestAnimationFrame(loop);
+      if(done) showAssess(true); });
   }catch(e){
     const msg=(e&&e.message)?e.message:String(e);
     xrnote.innerHTML='<b style="color:#e86b6b">VR 시작 실패:</b> '+msg
@@ -486,7 +639,7 @@ enterBtn.onclick=async()=>{
 let previewing=false;
 prevBtn.onclick=()=>{ initAudio(); overlay.classList.add('hidden'); exitBtn.style.display='block'; pvhint.style.display='block';
   previewing=true; camYaw=0;camPitch=0; startSession(); };
-exitBtn.onclick=()=>{ previewing=false; state='idle'; exitBtn.style.display='none'; pvhint.style.display='none'; overlay.classList.remove('hidden'); };
+exitBtn.onclick=()=>{ const done=sessionCompleted; previewing=false; state='idle'; exitBtn.style.display='none'; pvhint.style.display='none'; overlay.classList.remove('hidden'); if(done) showAssess(true); };
 
 /* 미리보기 둘러보기 + 클릭 정지/재개 */
 let camYaw=0,camPitch=0,drag=false,lx=0,ly=0,moved=false;
