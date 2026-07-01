@@ -201,6 +201,12 @@ const reticle=new THREE.Mesh(new THREE.RingGeometry(0.018,0.026,24),
   new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.85,depthTest:false}));
 reticle.position.set(0,0,-1.2); reticle.renderOrder=1000; reticle.visible=false; camera.add(reticle);
 
+// VOR 억제(캔슬레이션)용 머리 고정 표적 — 카메라 자식이라 머리와 함께 움직인다
+const vorcT=new THREE.Group();
+vorcT.add(new THREE.Mesh(new THREE.CircleGeometry(0.09,24),new THREE.MeshBasicMaterial({color:0xe8a23c})));
+vorcT.add(new THREE.Mesh(new THREE.RingGeometry(0.11,0.13,24),new THREE.MeshBasicMaterial({color:0xffffff})));
+vorcT.position.set(0,0,-2.0); vorcT.visible=false; camera.add(vorcT);
+
 /* ── 공통 유틸 ──────────────────────────────────── */
 function clearGroup(g){
   for(let i=g.children.length-1;i>=0;i--){
@@ -279,6 +285,24 @@ SCENES.vor = {
     if(sign!==SS.lastSign){ SS.lastSign=sign; chime(opts.plane==='h'?660:560,.06); }
   },
   metric(k){ return opts.mode.toUpperCase()+' · '+opts.bpm+'BPM'; }
+};
+
+/* ── 3b. VOR 억제(캔슬레이션) (시선안정화) ───────── */
+SCENES.vorc = {
+  name:'VOR 억제(캔슬레이션)', group:'시선 안정화 · 안구운동', useSpeed:false, useFixation:false,
+  hint:'머리와 함께 움직이는 표적을 눈·머리로 같이 따라갑니다(전정안반사 억제). 배경 점들이 반대로 흐르는 것이 정상입니다.',
+  defaults:{plane:'h', bpm:40},
+  controls:[
+    {k:'plane',label:'머리 회전면',type:'seg',options:[['h','좌우(yaw)'],['v','상하(pitch)']]},
+    {k:'bpm',label:'박자(고개 왕복)',type:'range',min:20,max:60,step:5,unit:' BPM',hint:'VOR 억제는 느린 속도에서 시작합니다. 표적이 또렷하면 올리세요.'}
+  ],
+  build(){ buildVORc(); },
+  update(dt,k,t){
+    const f=opts.bpm/120, pace=Math.sin(2*Math.PI*f*t); SS.pace=pace;
+    const sign=pace>=0?1:-1;
+    if(sign!==SS.lastSign){ SS.lastSign=sign; chime(opts.plane==='h'?600:520,.06); }
+  },
+  metric(){ return opts.bpm+'BPM'; }
 };
 
 /* ── 4. 전진/확장 광학흐름 터널 (습관화) ────────── */
@@ -459,7 +483,7 @@ SCENES.remembered = {
   metric(){ return ({show:'기억',dark:'암전',check:'확인'}[SS.phase]||'기억'); }
 };
 
-const SCENE_ORDER=['aisle','okn','flow','grating','vor','pursuit','targets','eyehead','remembered','street','escalator','room'];
+const SCENE_ORDER=['aisle','okn','flow','grating','vor','vorc','pursuit','targets','eyehead','remembered','street','escalator','room'];
 
 /* ════════════════════════════════════════════════════════════
    개별 빌더
@@ -699,6 +723,12 @@ function setActiveEH(){ const on=SS.active===0?SS.tA:SS.tB, off=SS.active===0?SS
   on.scale.setScalar(1.3); off.scale.setScalar(0.7);
   on.children[0].material.color.setHex(0xffd27a); off.children[0].material.color.setHex(0x6e5226); }
 
+function buildVORc(){
+  vorcT.visible=true; SS.pace=0; SS.lastSign=0;
+  bgDots(160,9);   // 월드 고정 배경점 — 표적과 반대로 흘러 억제 난도를 만든다
+  scene.background=new THREE.Color(0x101a20); scene.fog=null; hemi.intensity=0.9; dlight.intensity=0.4;
+}
+
 function buildRemembered(){
   const z=-2.0, T=makeTarget(0xe8a23c); T.position.set(0,0,z); world.add(T); SS.target=T;
   SS.dots=bgDots(100,8); SS.remT=0; SS.phase='show';
@@ -711,7 +741,7 @@ function buildScene(){
   clearGroup(world);
   world.position.set(0,0,0); world.rotation.set(0,0,0);
   SS={};
-  reticle.visible=false;
+  reticle.visible=false; vorcT.visible=false;
   const sc=SCENES[params.sceneId];
   sc.build();
   fix.visible = (sc.useFixation && params.fixation);
@@ -721,9 +751,9 @@ function buildScene(){
    상태머신 · 오디오 · HUD · 루프
    ════════════════════════════════════════════════════════════ */
 let state='idle';
-let tStart=0, tElapsed=0, ramp=0;
+let tStart=0, tElapsed=0, ramp=0, simT=0;   // simT: 세션 로컬 시간(정지 중 멈춤 → 재개 시 페이싱 점프 없음)
 let sessionCompleted=false, lastSessionCtx=null;
-function startSession(){ buildScene(); state='running'; tStart=performance.now(); tElapsed=0; ramp=params.ramp?0:1; sessionCompleted=false; chime(440,.4); }
+function startSession(){ buildScene(); state='running'; tStart=performance.now(); tElapsed=0; ramp=params.ramp?0:1; simT=0; sessionCompleted=false; chime(440,.4); }
 function togglePause(){
   if(state==='running'){ state='paused'; chime(330,.4); }
   else if(state==='paused'){ state='running'; tStart=performance.now()-tElapsed*1000; chime(440,.4); }
@@ -753,8 +783,10 @@ function drawHUD(k){
   if(state==='paused'){ hctx.fillStyle='#3ec6b4'; hctx.font='700 40px sans-serif'; hctx.fillText('정지됨', W/2,236);
     hctx.fillStyle='#cdd8dd'; hctx.font='400 26px sans-serif'; hctx.fillText('다시 시작하려면 핀치하세요', W/2,278); }
   else if(state==='done'){ hctx.fillStyle='#cdd8dd'; hctx.font='400 28px sans-serif'; hctx.fillText('세션 종료 · 핀치로 다시 시작', W/2,250); }
-  else if(params.sceneId==='vor'){ hctx.fillStyle='#3ec6b4'; hctx.font='700 28px sans-serif';
-    hctx.fillText((opts.plane==='h'?'◀ 박자에 맞춰 고개 좌우 ▶':'▲ 박자에 맞춰 고개 상하 ▼'), W/2,250);
+  else if(params.sceneId==='vor'||params.sceneId==='vorc'){ hctx.fillStyle='#3ec6b4'; hctx.font='700 28px sans-serif';
+    const vc=params.sceneId==='vorc';
+    hctx.fillText(opts.plane==='h'?(vc?'◀ 표적을 눈·머리로 함께 따라가기 ▶':'◀ 박자에 맞춰 고개 좌우 ▶')
+                                  :(vc?'▲ 표적을 눈·머리로 함께 따라가기 ▼':'▲ 박자에 맞춰 고개 상하 ▼'), W/2,250);
     // 페이싱 카렛
     const cx=W/2 + (SS.pace||0)*180; hctx.fillStyle='#e8a23c'; hctx.beginPath(); hctx.arc(cx,292,9,0,7); hctx.fill(); }
   else if(sc.cue){ hctx.fillStyle='#3ec6b4'; hctx.font='700 26px sans-serif'; hctx.fillText(sc.cue(), W/2,250); }
@@ -773,8 +805,11 @@ function render(){
     if(tElapsed>=params.duration){ state='done'; sessionCompleted=true; lastSessionCtx=snapCtx(); chime(523,.7); setTimeout(()=>chime(659,.7),120); }
   } else { ramp=Math.max(0,ramp-dt*0.6); }
 
+  // 실행 중에만 업데이트. 단, 속도형 세션은 정지·종료 후 ramp가 남아 있는 동안
+  // 부드럽게 감속(페이드아웃)하도록 계속 돌린다. 비속도형(VOR·대체운동 등)은
+  // 정지 즉시 멈춰 메트로놈·전환음이 세션 밖에서 울리지 않는다.
   const k = (sc.useSpeed?params.speed:1)*ramp;
-  if(state!=='paused') sc.update(dt,k,clock.elapsedTime);
+  if(state==='running' || (sc.useSpeed && ramp>0.001)){ simT+=dt; sc.update(dt,k,simT); }
 
   const targetDim=(state==='paused')?0.5:0;
   dim.material.opacity += (targetDim-dim.material.opacity)*Math.min(1,dt*5);
