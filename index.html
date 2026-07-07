@@ -119,6 +119,18 @@
     <div id="commonOpts"></div>
   </div>
 
+  <div class="panel">
+    <h2>임상 프리셋</h2>
+    <select id="presetSel" style="width:100%;font:inherit;font-size:13.5px;font-weight:600;color:var(--ink);
+      background:#1d272e;border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px"></select>
+    <div class="seg">
+      <button id="presetLoad">불러오기</button>
+      <button id="presetSave">현재 설정 저장</button>
+      <button id="presetDel">삭제</button>
+    </div>
+    <p class="hint">세션·세부 설정·강도·길이를 통째로 저장합니다. 환자별/단계별 프리셋으로 활용하세요.</p>
+  </div>
+
   <div class="start">
     <button id="enterVR" class="cta" disabled>VR로 시작</button>
     <button id="preview" class="ghost">화면 미리보기</button>
@@ -432,10 +444,12 @@ SCENES.room = {
 SCENES.targets = {
   name:'표적 맞히기', group:'시선 안정화 · 안구운동', useSpeed:true, useFixation:false,
   hint:'표적을 시선 중앙(레티클)으로 맞춰 잠시 머물면 명중합니다. 순응도를 높이는 게임형 세션.',
-  defaults:{count:'med', size:'med'},
+  defaults:{count:'med', size:'med', dwellDeg:3.5, dwellT:0.7},
   controls:[
     {k:'count',label:'동시 표적 수',type:'seg',options:[['low','적게'],['med','보통'],['high','많이']]},
-    {k:'size',label:'표적 크기',type:'seg',options:[['low','작게'],['med','보통'],['high','크게']]}
+    {k:'size',label:'표적 크기',type:'seg',options:[['low','작게'],['med','보통'],['high','크게']]},
+    {k:'dwellDeg',label:'명중 판정 각도',type:'range',min:2,max:7,step:0.5,unit:'°',hint:'시선 중심과 표적 사이 허용 각도. 클수록 쉽습니다.'},
+    {k:'dwellT',label:'응시 유지 시간',type:'range',min:0.4,max:1.5,step:0.1,unit:' s',hint:'명중으로 인정되기까지 표적에 시선을 유지할 시간.'}
   ],
   build(){ buildTargets(opts.count, opts.size); reticle.visible=true; },
   update(dt,k,t){ updateTargets(dt); },
@@ -685,14 +699,15 @@ function placeTarget(m){ m.position.set(-3+Math.random()*6, 0.7+Math.random()*1.
 const _fwd=new THREE.Vector3(), _cp=new THREE.Vector3(), _tp=new THREE.Vector3();
 function updateTargets(dt){
   if(!SS.targets)return;
+  const angThr=(opts.dwellDeg||3.5)*Math.PI/180, dwellT=opts.dwellT||0.7;
   camera.getWorldDirection(_fwd); camera.getWorldPosition(_cp);
   SS.targets.forEach(m=>{
     _tp.copy(m.position).sub(_cp).normalize();
     const ang=_fwd.angleTo(_tp);
-    if(ang<0.06){ m.userData.dwell+=dt; m.material.emissive.setHex(0x2a8a7a);
-      if(m.userData.dwell>0.7){ SS.score++; chime(720,.12); setTimeout(()=>chime(880,.12),90); placeTarget(m); m.material.emissive.setHex(0x10403a); } }
+    if(ang<angThr){ m.userData.dwell+=dt; m.material.emissive.setHex(0x2a8a7a);
+      if(m.userData.dwell>dwellT){ SS.score++; chime(720,.12); setTimeout(()=>chime(880,.12),90); placeTarget(m); m.material.emissive.setHex(0x10403a); } }
     else { m.userData.dwell=Math.max(0,m.userData.dwell-dt*2); m.material.emissive.setHex(0x10403a); }
-    m.scale.setScalar(1+Math.min(0.6,m.userData.dwell));
+    m.scale.setScalar(1+Math.min(0.6, m.userData.dwell/dwellT*0.6));
   });
 }
 
@@ -891,6 +906,51 @@ applySceneDefaults();
 renderScenePicker();
 renderControls();
 $('#sceneHint').textContent=SCENES[params.sceneId].hint;
+
+/* ── 임상 프리셋 (localStorage) ─────────────────── */
+const PRESET_KEY='vrt_presets';
+function getPresets(){ try{ return JSON.parse(localStorage.getItem(PRESET_KEY)||'[]'); }catch(e){ return []; } }
+function setPresets(p){ try{ localStorage.setItem(PRESET_KEY,JSON.stringify(p)); }catch(e){} }
+const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function renderPresets(){
+  const sel=$('#presetSel'), ps=getPresets();
+  sel.innerHTML = ps.length
+    ? ps.map((p,i)=>'<option value="'+i+'">'+escHtml(p.name)+' · '+escHtml(p.scene||'')+'</option>').join('')
+    : '<option value="-1">저장된 프리셋 없음</option>';
+}
+function applyPreset(p){
+  if(!p || !SCENES[p.sceneId]) return false;
+  params.sceneId=p.sceneId;
+  opts=Object.assign({}, SCENES[p.sceneId].defaults, p.opts||{});   // 스키마 변화에도 안전
+  if(typeof p.speed==='number') params.speed=p.speed;
+  if(typeof p.duration==='number') params.duration=p.duration;
+  params.ramp=!!p.ramp; params.fixation=!!p.fixation;
+  renderScenePicker(); renderControls(); $('#sceneHint').textContent=SCENES[p.sceneId].hint;
+  if(state!=='running'&&state!=='paused') buildScene();
+  return true;
+}
+$('#presetSave').onclick=()=>{
+  const name=(window.prompt&&prompt('프리셋 이름 (예: 김OO 초기, PPPD 2단계)'))||'';
+  if(!name.trim()) return;
+  const ps=getPresets();
+  ps.push({name:name.trim(), sceneId:params.sceneId, scene:SCENES[params.sceneId].name,
+           opts:Object.assign({},opts), speed:params.speed, duration:params.duration,
+           ramp:params.ramp, fixation:params.fixation, ts:Date.now()});
+  while(ps.length>100) ps.shift();
+  setPresets(ps); renderPresets(); $('#presetSel').value=String(ps.length-1);
+};
+$('#presetLoad').onclick=()=>{
+  const i=parseInt($('#presetSel').value,10), ps=getPresets();
+  if(!(i>=0&&i<ps.length)) return;
+  if(!applyPreset(ps[i])) alert('이 프리셋의 세션을 찾을 수 없습니다(구버전).');
+};
+$('#presetDel').onclick=()=>{
+  const i=parseInt($('#presetSel').value,10), ps=getPresets();
+  if(!(i>=0&&i<ps.length)) return;
+  if(!confirm('프리셋 "'+ps[i].name+'"을(를) 삭제할까요?')) return;
+  ps.splice(i,1); setPresets(ps); renderPresets();
+};
+renderPresets();
 
 /* ════════════════════════════════════════════════════════════
    세션 후 자가평가 기록 (localStorage)
